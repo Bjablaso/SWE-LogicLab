@@ -21,3 +21,8 @@ The initial version will be developed as a web application using a database for 
 ## System Context Daigram
 ![Campuse connect System Context Diagram](context_daigram.jpeg) 
 
+## Team Member
+- Brandon Jablasone (https://github.com/Bjablaso)
+- Ankith Rajashekar (https://github.com/ankith860)
+- Natalie Piltoyan (https://github.com/natpil)
+- Nyeswaty Socree (https://github.com/nsocree)
