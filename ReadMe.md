@@ -19,7 +19,7 @@ The primary users are students, while authorized student organizations, universi
 The initial version will be developed as a web application using a database for user and event information and an AI/ML recommendation component. Features such as ticket purchasing, financial transactions, room reservations, native mobile applications, and full integration with university systems are outside the initial project scope.
 
 ## System Context Daigram
-![Campuse connect System Context Diagram](context_diagram.jpeg) 
+![Campuse connect System Context Diagram](context_diagram.jpg) 
 
 ## Team Member
 - Brandon Jablasone (https://github.com/Bjablaso)
