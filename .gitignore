@@ -45,3 +45,5 @@ example
 # JetBrains IDE files
 .idea/
 
+# VS Code
+.vscode/
