@@ -41,3 +41,10 @@ example
 # generated native folders
 /ios
 /android
+
+#IDE
+../../.idea/LogicLabSetUp.iml
+../../.idea/misc.xml
+../../.idea/modules.xml
+../../.idea/vcs.xml
+
