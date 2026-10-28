@@ -1,46 +1,18 @@
-import { Stack } from "expo-router";
-import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
-import { StyleSheet, Text, View } from 'react-native';
+import { Tabs } from "expo-router";
+import {Navbar} from "@/app/component/navbar";
+
 
 export default function RootLayout() {
-  return (
-      <SafeAreaProvider>
-        <SafeAreaView edges={['top']}  style={styles.shell}>
-          <View style={styles.content}>
-            <Text style={styles.label}>Main content area</Text>
-          </View>
-
-          <View style={styles.nav}>
-            <Text style={styles.label}>Navigation area</Text>
-          </View>
-
-        </SafeAreaView>
-      </SafeAreaProvider>
-  );
+    return (
+        <Tabs
+            screenOptions={{ headerShown: false }}
+            tabBar={(props) => <Navbar {...props} />}
+        >
+            <Tabs.Screen name="Discover" />
+            <Tabs.Screen name="Saved" />
+            <Tabs.Screen name="Attending" />
+            <Tabs.Screen name="Account" />
+            <Tabs.Screen name="index" options={{ href: null }} />
+        </Tabs>
+    );
 }
-
-const styles = StyleSheet.create({
-  shell: {
-    flex: 1,                 // fill the whole phone
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,                 // take all space above the nav
-    margin: 3,
-    borderWidth: 2,
-    borderStyle: 'dashed',   // dashed like the wireframe, just to see it
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nav: {
-    height: 64,              // fixed height
-  //  marginHorizontal: 8,
-    marginVertical: 3,
-    borderWidth: 2,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: { fontSize: 16, fontWeight: '700' },
-})
