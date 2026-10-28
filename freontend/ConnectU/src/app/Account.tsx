@@ -4,11 +4,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Account() {
     return (
         <SafeAreaView edges={["top"]} style={styles.container}>
-            <Text>Account</Text>
+            <Text style={styles.text}>Account</Text>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, borderWidth: 3, borderColor: "green" },
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff",
+    },
+    text: { fontSize: 18, fontWeight: "700" },
 });
