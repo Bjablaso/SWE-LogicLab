@@ -1,9 +1,11 @@
 /** @type {import('@babel/core').ConfigFunction} */
-
-module .exports = function (api: { cache: (arg0: boolean) => void }) {
-    api.cache(true)
+module.exports = function (api) {
+    api.cache(true);
     return {
-        presets: ['babel-preset-expo'],
+        presets: [
+            ["babel-preset-expo", { jsxImportSource: "nativewind" }],
+            "nativewind/babel",
+        ],
         plugins: [
             [
                 'module-resolver',
@@ -11,16 +13,14 @@ module .exports = function (api: { cache: (arg0: boolean) => void }) {
                     root: ['./src'],
                     extensions: ['.ios.ts', '.android.ts', '.ts', '.tsx', '.js', '.jsx', '.json'],
                     alias: {
-                       // '@theme': './src/theme',
-                        '@app': './src/app',
+                        '@components': './src/app/component',
                         '@constants': './src/constants',
-                     //   '@context': './src/context',
-                      //  '@components': './src/components',
-                       // '@hooks': './src/hooks',
-                    },
-                }
-            ]
-        ]
-    }
 
-}
+                        // add this once you create src/theme/index.ts (or src/theme.ts):
+                        // '@theme': './src/theme',
+                    },
+                },
+            ],
+        ],
+    };
+};
