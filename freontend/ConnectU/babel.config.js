@@ -13,7 +13,7 @@ module.exports = function (api) {
                     root: ['./src'],
                     extensions: ['.ios.ts', '.android.ts', '.ts', '.tsx', '.js', '.jsx', '.json'],
                     alias: {
-                        '@components': './src/app/component',
+                        "@components": "./src/component",
                         '@constants': './src/constants',
 
                         // add this once you create src/theme/index.ts (or src/theme.ts):
