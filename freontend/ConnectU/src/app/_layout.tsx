@@ -51,7 +51,7 @@ function ThemedTabs() {
 export default function RootLayout() {
     // no useTheme() here: the provider below hasn't rendered yet
     return (
-        <SafeAreaProvider>
+        <SafeAreaProvider className="p-3">
             <AppThemeProvider>
                 <ThemedTabs />
             </AppThemeProvider>
