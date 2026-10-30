@@ -63,7 +63,18 @@ export function Navbar() {
             style={[
                 styles.bar,
                 { height: 74 + insets.bottom, paddingBottom: insets.bottom,
-                backgroundColor: colors.background},
+                backgroundColor: colors.background,
+                    shadowColor: colors.baseGray100,
+                    shadowOffset: {
+                        width: 0,
+                        height: -4, // negative = shadow goes UP
+                    },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 6,
+                    elevation: 8, // Android
+
+                },
+
 
             ]}
         >
@@ -72,8 +83,8 @@ export function Navbar() {
 
                 //const color = focused ? "#000" : "#999";
                 const color = focused
-                    ? colors.baseFont
-                    : colors.baseGray100;
+                    ? colors.accent
+                    : colors.baseFont;
 
 
 
