@@ -7,16 +7,17 @@ import {
 } from "react-native";
 
 import { EventStore } from "@/insterface/eventInterface";
+import {useEventContext} from "@/context/useEventContext";
 
 
 interface EventDetailProps {
     eventStore: EventStore;
 
-    saveEvent?: (currentEventID: number) => void;
-    unsaveEvent?: (currentEventID: number) => void;
-
-    attendEvent?: (currentEventID: number) => void;
-    unattendEvent?: (currentEventID: number) => void;
+    // saveEvent?: (currentEventID: number) => void;
+    // unsaveEvent?: (currentEventID: number) => void;
+    //
+    // attendEvent?: (currentEventID: number) => void;
+    // unattendEvent?: (currentEventID: number) => void;
 
     eventID: number;
 
@@ -28,18 +29,19 @@ export default function EventDetail({
                                         eventID,
                                         goBack,
                                         eventStore,
-                                        attendEvent,
-                                        unattendEvent,
-                                        saveEvent,
-                                        unsaveEvent,
+
                                     }: EventDetailProps) {
 
     const state = eventStore;
+    const {attendEvent,
+        unattendEvent,
+        saveEvent,
+        unsaveEvent} = useEventContext()
 
-    const attendEventFunc = attendEvent;
-    const saveEventFunc = saveEvent;
-    const unsaveEventFunc = unsaveEvent;
-    const unattendEventFunc = unattendEvent;
+    // const attendEventFunc = attendEvent;
+    // const saveEventFunc = saveEvent;
+    // const unsaveEventFunc = unsaveEvent;
+    // const unattendEventFunc = unattendEvent;
 
 
     // TODO: MOVE TO useEventContext()
@@ -297,12 +299,13 @@ export default function EventDetail({
                                 /*
                                  * Update global event state.
                                  */
+                                saveEvent(eventID)
 
-                                if (saveEventFunc) {
-
-                                    saveEventFunc(eventID);
-
-                                }
+                                // if (saveEventFunc) {
+                                //
+                                //     saveEventFunc(eventID);
+                                //
+                                // }
 
                             }}
 
@@ -348,12 +351,13 @@ export default function EventDetail({
                                 /*
                                  * Update global event state.
                                  */
+                                attendEvent(eventID)
 
-                                if (attendEventFunc) {
-
-                                    attendEventFunc(eventID);
-
-                                }
+                                // if (attendEventFunc) {
+                                //
+                                //     attendEventFunc(eventID);
+                                //
+                                // }
 
                             }}
 
