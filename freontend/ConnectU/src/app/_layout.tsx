@@ -2,20 +2,13 @@ import { Tabs } from "expo-router";
 //import { Navbar } from '@components/Navbar';
 import "../global.css"
 import { useTheme } from '@/hooks/use-theme';
-import {StatusBar} from "react-native";
+
 import {SafeAreaProvider} from "react-native-safe-area-context";
-//import {AppThemeProvider} from "@constants/app-theme-provider";
-//import { Navbar } from '@/components/Navbar';                 // was '@components/Navbar'
+
 import { AppThemeProvider } from '@/constants/app-theme-provider';
-import {Navbar} from "@/component/Navbar";  // was '@constants/...'
+import {Navbar} from "@/component/Navbar";
+import EventDetailScreen from "@/app/EventDetailScreen";  // was '@constants/...'
 
-
-// import '../global.css';
-// import { Tabs } from 'expo-router';
-// import { StatusBar } from 'expo-status-bar';
-// import { SafeAreaProvider } from 'react-native-safe-area-context';
-// import { Navbar } from '@/components/navbar';
-// import { AppThemeProvider } from '@/theme/app-theme-provider';
 
 
 function ThemedTabs() {
@@ -38,6 +31,7 @@ function ThemedTabs() {
                     //fontBaseColor={colors.baseFont}
                 />}
             >
+
                 <Tabs.Screen name="Discover" />
                 <Tabs.Screen name="Saved" />
                 <Tabs.Screen name="Attending" />
