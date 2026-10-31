@@ -38,7 +38,24 @@ export const userEvent : EventStore = {
             "isSaved": true,
             "isRsvpd": false,
             "isRecommended": false
-        }
+        },
+        {
+            "eventId": 103,
+            "title": "Tiger Tuesday @ Nite: Trivia",
+            "description": "Team trivia night with prizes for the top three teams. Teams of up to five; solo players welcome.",
+            "category": "Student Life",
+            "eventDate": "2026-11-03",
+            "startTime": "19:00",
+            "endTime": "21:00",
+            "format": "in_person",
+            "location": "University Union, PAWS",
+            "imageUrl": "",
+            "capacity": 100,
+            "spotsLeft": 75,
+            "isSaved": true,
+            "isRsvpd": true,
+            "isRecommended": false
+        },
     ],
     savedEventIds: [],
     attendingEventIds: [],
