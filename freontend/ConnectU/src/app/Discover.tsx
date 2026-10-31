@@ -2,12 +2,14 @@ import {Text, StyleSheet, View, TextInput} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { TouchableOpacity } from 'react-native';
-import { DiscoverSectionHeader } from "@/component/DiscoverSectionHeader";
+
 import Feather from '@expo/vector-icons/Feather';
 import {cssInterop} from "nativewind";
 import  {useTheme} from "@/hooks/use-theme";
 import {TitleCard} from "@/component/TitleCard";
 import {EventCard} from "@/component/EventCard";
+import EventDetail from "@/component/EventDetail";
+import {EventListView} from "@/component/EventListView";
 
 
 
@@ -101,18 +103,10 @@ const TopContainer = ({childrenOne}: TopContainerProps) =>{
 const BottomContainer = () =>{
     return (
         <View
-        className="w-full h-[87%] pt-5 px-4 ">
+        className="w-full h-[87%] pt-2 px-4 ">
 
-            <TitleCard/>
-            <DiscoverSectionHeader
-                text="Recommended for you"
-            />
 
-            <EventCard/>
-            {/*//scroll view*/}
-            {/*<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-3 px-4">*/}
-
-            {/*</ScrollView>*/}
+            <EventListView/>
         </View>
     )
 }
@@ -135,13 +129,3 @@ export default function Discover() {
         </SafeAreaView>
     );
 }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         alignItems: "center",
-//         justifyContent: "center",
-//         //backgroundColor: "#fff",
-//     },
-//     text: { fontSize: 18, fontWeight: "700" },
-// });
