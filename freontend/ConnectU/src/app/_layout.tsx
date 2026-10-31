@@ -7,7 +7,8 @@ import {SafeAreaProvider} from "react-native-safe-area-context";
 
 import { AppThemeProvider } from '@/constants/app-theme-provider';
 import {Navbar} from "@/component/Navbar";
-import EventDetailScreen from "@/app/EventDetailScreen";  // was '@constants/...'
+import {EventContextProvider} from "@/context/EventContextProvider"
+import EventDetailScreen from "@/component/EventDetail";  // was '@constants/...'
 
 
 
@@ -47,7 +48,9 @@ export default function RootLayout() {
     return (
         <SafeAreaProvider className="p-3">
             <AppThemeProvider>
-                <ThemedTabs />
+                <EventContextProvider>
+                    <ThemedTabs />
+                </EventContextProvider>
             </AppThemeProvider>
         </SafeAreaProvider>
     );
