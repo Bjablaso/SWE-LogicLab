@@ -2,9 +2,13 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Link , useRouter} from 'expo-router';
 import data from '../../event.json';
+import {Event} from "@/insterface/eventInterface";
 
-export const EventCard = () => {
-    const event = data.recommended[0];
+interface EventDetailProps {
+    event: Event;
+}
+export const EventCard = ({event}: EventDetailProps) => {
+    //const event = data.recommended[0];
     const router = useRouter();
 
     return (
