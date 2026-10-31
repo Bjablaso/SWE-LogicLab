@@ -13,16 +13,18 @@ export const EventCard = ({event}: EventDetailProps) => {
 
     return (
 
-            <TouchableOpacity >
                 <View className="w-full overflow-hidden rounded-3xl border border-border bg-surface">
                     {/* top: image placeholder + date badge */}
                     <View className="h-32 items-center justify-center border-b border-border bg-input">
                         <Feather name="image" size={22} color="#9E9A90" />
                         <Text className="mt-1 text-xs font-bold text-muted">Image goes here</Text>
 
-                        <View className="absolute left-3 top-3 items-center rounded-xl bg-accent px-2 py-1">
-                            <Text className="text-[10px] font-extrabold text-black">OCT</Text>
-                            <Text className="text-xl font-extrabold text-black">14</Text>
+                        <View className="absolute left-3 top-3 items-center
+                        rounded-xl bg-accent px-2 py-3 h-[45%] w-[13%]
+                        justify-center
+                        ">
+                            <Text className="text-sm font-bold text-black">OCT</Text>
+                            <Text className="text-2xl font-extrabold text-black">14</Text>
                         </View>
                     </View>
 
@@ -35,8 +37,6 @@ export const EventCard = ({event}: EventDetailProps) => {
                         <Text className="text-sm text-baseFont">{event.spotsLeft} of {event.capacity} spots open</Text>
                     </View>
                 </View>
-            </TouchableOpacity>
-
     );
 };
 
