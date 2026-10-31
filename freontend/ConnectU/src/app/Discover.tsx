@@ -117,10 +117,7 @@ const BottomContainer = () =>{
         eventID: 0,
         isClick: false
     });
-   const {state, saveEvent,
-       unsaveEvent,
-       attendEvent,
-       unattendEvent} = useEventContext()
+   const {state} = useEventContext()
 
     useFocusEffect(
         useCallback(() => {
@@ -158,10 +155,6 @@ const BottomContainer = () =>{
                     eventStore={state}
                     eventID={seeDetails.eventID}
                     goBack={goBack}
-                    attendEvent={attendEvent}
-                    unattendEvent={unattendEvent}
-                    saveEvent={saveEvent}
-                    unsaveEvent={unsaveEvent}
                 />
             )}
 
