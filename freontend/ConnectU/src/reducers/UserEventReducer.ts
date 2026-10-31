@@ -1,9 +1,49 @@
 import {EventAction, EventStore} from "@/insterface/eventInterface";
+import {DiscoverSectionHeader} from "@/component/DiscoverSectionHeader";
+
 
 export const userEvent : EventStore = {
-    events: [],
+    events: [
+        //sample data to see if information works
+        {
+            "eventId": 101,
+            "title": "Art of Networking | CBE",
+            "description": "Practice introductions, elevator pitches and follow-up emails with College of Business & Economics career coaches.",
+            "category": "Career",
+            "eventDate": "2026-11-02",
+            "startTime": "17:00",
+            "endTime": "18:30",
+            "format": "in_person",
+            "location": "Stephens Hall 310",
+            "imageUrl": "",
+            "capacity": 40,
+            "spotsLeft": 22,
+            "isSaved": false,
+            "isRsvpd": false,
+            "isRecommended": true
+        },
+        {
+            "eventId": 102,
+            "title": "Fall Student Art Showcase",
+            "description": "Paintings, sculpture and digital work from Towson art students, with a short artist talk at 2 PM.",
+            "category": "Arts",
+            "eventDate": "2026-11-03",
+            "startTime": "13:00",
+            "endTime": "16:00",
+            "format": "in_person",
+            "location": "Center for the Arts Gallery",
+            "imageUrl": "",
+            "capacity": 150,
+            "spotsLeft": 120,
+            "isSaved": true,
+            "isRsvpd": false,
+            "isRecommended": false
+        }
+    ],
     savedEventIds: [],
     attendingEventIds: [],
+    recomendedTitle: "Recommended for you",
+    uptodateTitle: "Recommended for you"
 }
 
 export function userEventReducer(

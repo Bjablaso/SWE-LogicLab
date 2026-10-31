@@ -1,6 +1,6 @@
 // define store interface for Event
 
-interface Event {
+export interface Event {
     eventId: number,
     title: string,
     description: string,
@@ -20,9 +20,10 @@ interface Event {
 
 export interface EventStore {
     events: Event[];
-
     savedEventIds: number[];
     attendingEventIds: number[];
+    recomendedTitle: string;
+    uptodateTitle: string;
 }
 
 export interface EventContextType {
