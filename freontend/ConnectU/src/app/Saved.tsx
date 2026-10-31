@@ -17,12 +17,15 @@ interface SavedEventRowProp{
     viewEventIDNow: (id: number)=>void;
     eventID: number;
 
+
 }
 
 const SavedEventRow = ({title, eventDate, startTime, location,
                            isClick, viewEventIDNow, eventID}: SavedEventRowProp) => {
     const {colors} = useTheme();
     const eventid = eventID
+    const {state, attendEvent} = useEventContext()
+    const currentEvent = state.events.find(event => event.eventId === eventid)
     function clikacble(){
         isClick(true)
     }
@@ -75,7 +78,9 @@ const SavedEventRow = ({title, eventDate, startTime, location,
 
                     <Text className="font-bold text-baseFont">View</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}} className="flex-1 items-center rounded-full  bg-accent py-2.5">
+                <TouchableOpacity onPress={() => {
+                   attendEvent(eventid);
+                }} className="flex-1 items-center rounded-full  bg-accent py-2.5">
 
                     <Text className="font-bold text-baseFont"> RSVP</Text>
                 </TouchableOpacity>
