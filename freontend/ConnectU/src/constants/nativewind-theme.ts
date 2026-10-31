@@ -1,5 +1,5 @@
-import {vars} from "nativewind";
-import {palette} from "@constants/theme";
+import { vars } from "nativewind";
+import { palette } from "@constants/theme";
 
 /**
  * NativeWind bridge
@@ -15,8 +15,10 @@ import {palette} from "@constants/theme";
 export const lightNativeWindTheme = vars({
     "--color-background": palette.light.background,
     "--color-surface": palette.light.surface,
+    "--color-surfaceShadow": palette.light.surfaceShadow,
     "--color-input": palette.light.input,
     "--color-nav": palette.light.nav,
+    "--color-searchBarBg": palette.light.searchBarBg,
 
     "--color-border": palette.light.border,
     "--color-control": palette.light.control,
@@ -52,8 +54,10 @@ export const lightNativeWindTheme = vars({
 export const darkNativeWindTheme = vars({
     "--color-background": palette.dark.background,
     "--color-surface": palette.dark.surface,
+    "--color-surfaceShadow": palette.dark.surfaceShadow,
     "--color-input": palette.dark.input,
     "--color-nav": palette.dark.nav,
+    "--color-searchBarBg": palette.dark.searchBarBg,
 
     "--color-border": palette.dark.border,
     "--color-control": palette.dark.control,
@@ -76,7 +80,7 @@ export const darkNativeWindTheme = vars({
 
     "--color-baseFont": palette.dark.baseFont,
 
-    "--color-baseGray100": palette.dark.baseGraySurface100,
+    "--color-baseGray100": palette.dark.baseGray100,
     "--color-baseGray200": palette.dark.baseGray200,
     "--color-baseGray300": palette.dark.baseGray300,
     "--color-baseGray400": palette.dark.baseGray400,

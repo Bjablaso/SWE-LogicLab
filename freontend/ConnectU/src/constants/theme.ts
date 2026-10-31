@@ -11,7 +11,7 @@ export const palette = {
         // baseFont: '#000000', baseGray100: '#656464',
         baseFont: '#000000',
         baseGray100: '#afaeae', baseGray200: '#B3B3B3', baseGray300: '#999999',
-        baserGray400: '#808080', baseGray500: '#6B6B6B', baseGray600: '#555555',
+        baseGray400: '#808080', baseGray500: '#6B6B6B', baseGray600: '#555555',
         searchBarBg: "#ffffff"
 
 
