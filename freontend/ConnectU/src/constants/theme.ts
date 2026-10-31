@@ -1,7 +1,7 @@
 //: theme.ts src/app/constant/theme.ts
 export const palette = {
     light: {
-        background: '#eff1dc', surface: '#ffffff', input: '#F4F2EC', nav: '#edebe6',
+        background: '#f2f4ec', surface: '#ffffff', input: '#F4F2EC', nav: '#edebe6',
         surfaceShadow:"#ffffff",
         border: '#E4E1D8', control: '#D6D2C7', outline: '#BDB8AC',
         foreground: '#141414', muted: '#5C584F', subtle: '#6B675E',
