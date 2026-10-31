@@ -10,6 +10,10 @@ import {TitleCard} from "@/component/TitleCard";
 import {EventCard} from "@/component/EventCard";
 import EventDetail from "@/component/EventDetail";
 import {EventListView} from "@/component/EventListView";
+import {useEventContext} from "@/context/useEventContext";
+import {useCallback, useState} from "react";
+import {useFocusEffect} from "expo-router";
+
 
 
 
@@ -91,6 +95,10 @@ const Search = () =>{
 
     )
 }
+interface BottomContainerState {
+    eventID: number;
+    isClick: boolean;
+}
 const TopContainer = ({childrenOne}: TopContainerProps) =>{
     return (
         <View className="w-full h-[13%]">
@@ -101,12 +109,56 @@ const TopContainer = ({childrenOne}: TopContainerProps) =>{
     )
 }
 const BottomContainer = () =>{
+    const defaultDetailState: BottomContainerState = {
+        eventID: 0,
+        isClick: false
+    };
+    const [seeDetails, setDetails] = useState<BottomContainerState>({
+        eventID: 0,
+        isClick: false
+    });
+   const {state} = useEventContext()
+
+    useFocusEffect(
+        useCallback(() => {
+            setDetails(defaultDetailState);
+        }, [])
+    );
+    function detailScreenRequest(
+        isClick: boolean,
+        eventID: number
+    ) {
+        setDetails({
+            isClick,
+            eventID
+        });
+    }
+
+    function goBack() {
+        setDetails(prev => ({
+            ...prev,
+            isClick: false
+        }));
+    }
     return (
         <View
         className="w-full h-[87%] pt-2 px-4 ">
+            {!seeDetails.isClick && (
+                <EventListView
+                    eventState={state}
+                    isLoadDetailScreen={detailScreenRequest}
+                />
+            )}
+
+            {seeDetails.isClick && (
+                <EventDetail
+                    eventStore={state}
+                    eventID={seeDetails.eventID}
+                    goBack={goBack}
+                />
+            )}
 
 
-            <EventListView/>
         </View>
     )
 }
