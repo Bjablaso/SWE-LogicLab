@@ -1,12 +1,17 @@
-import {ScrollView, View} from "react-native";
+import {ScrollView, TouchableOpacity, View} from "react-native";
 import {useEventContext} from "@/context/useEventContext"
 import { DiscoverSectionHeader } from "@/component/DiscoverSectionHeader";
 import {useEffect, useState} from "react";
 import {EventCard} from "@/component/EventCard";
 import DeviceCountry, { TYPE_TELEPHONY, TYPE_CONFIGURATION } from 'react-native-device-country';
 import {TitleCard} from "@/component/TitleCard";
+import { EventStore} from "@/insterface/eventInterface";
 
-export const EventListView = ()=>{
+interface EventListViewProps {
+    eventState: EventStore;
+    isLoadDetailScreen: (clicked: boolean, evntID: number) => void;
+}
+export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProps)=>{
     //TODO: IMPLEMENT SEARCH AND FILTER CRATERIA EVENT IN DYNAMIC ENEVNT FUNCTION
     // TODO: MOVE TO A BROADER CONTEXT FOR DEVICE AND DEVICE INFORMATION
     const [device, setDevice] = useState<string | null>(null);
@@ -14,7 +19,7 @@ export const EventListView = ()=>{
 
 
     //TODO: Keep Here
-    const {state} = useEventContext()
+    const state = eventState
     const recommendedEvents = state.events.filter(
         event => event.isRecommended
     );
@@ -77,10 +82,18 @@ export const EventListView = ()=>{
                 />
 
                 {recommendedEvents.map(event => (
-                    <EventCard
-                        key={event.eventId}
-                        event={event}
-                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            isLoadDetailScreen(true, event.eventId)
+
+                        }}
+                    >
+                        <EventCard
+                            key={event.eventId}
+                            event={event}
+                        />
+                    </TouchableOpacity>
+
                 ))}
 
 
@@ -90,10 +103,18 @@ export const EventListView = ()=>{
                 />
 
                 {sortedEvents.map(event => (
-                    <EventCard
-                        key={event.eventId}
-                        event={event}
-                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            isLoadDetailScreen(true, event.eventId)
+
+                        }}
+                    >
+                        <EventCard
+                            key={event.eventId}
+                            event={event}
+                        />
+                    </TouchableOpacity>
+
                 ))}
             </ScrollView>
         )
