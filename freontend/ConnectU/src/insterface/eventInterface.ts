@@ -41,8 +41,7 @@ export interface saveEventInterface{
     isSaved: boolean,
 }
 
-// TODO: Add unthentication token ->
-
+// TODO: WRITE TEST CASES FOR EVENTACTION ->
 export type EventAction =
     | { type: "SAVED"; payload: { eventId: number } }
     | { type: "UNSAVED"; payload: { eventId: number } }

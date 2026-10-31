@@ -112,6 +112,18 @@ export function userEventReducer(
                 events: updateEvents
             }
         }
+        //TODO : WRITE A ATTEND CASE
+            case "ATTEND":{
+                return {
+                    ...state,
+                }
+            }
+         //TODO : WRITE UNATTEND
+            case "UNATTEND":{
+                return {
+                    ...state,
+                }
+            }
         default:
             return state;
     }
