@@ -16,8 +16,6 @@ interface SavedEventRowProp{
     isClick: (clicked: boolean)=>void;
     viewEventIDNow: (id: number)=>void;
     eventID: number;
-
-
 }
 
 const SavedEventRow = ({title, eventDate, startTime, location,
@@ -30,24 +28,6 @@ const SavedEventRow = ({title, eventDate, startTime, location,
         isClick(true)
     }
 
-
-    // {
-    //     "eventId": 102,
-    //     "title": "Fall Student Art Showcase",
-    //     "description": "Paintings, sculpture and digital work from Towson art students, with a short artist talk at 2 PM.",
-    //     "category": "Arts",
-    //     "eventDate": "2026-11-03",
-    //     "startTime": "13:00",
-    //     "endTime": "16:00",
-    //     "format": "in_person",
-    //     "location": "Center for the Arts Gallery",
-    //     "imageUrl": "",
-    //     "capacity": 150,
-    //     "spotsLeft": 120,
-    //     "isSaved": true,
-    //     "isRsvpd": false,
-    //     "isRecommended": false
-    // }
 
     return (
         <View className="gap-3 rounded-2xl border border-border bg-surface p-4">
@@ -122,7 +102,8 @@ export default function Saved() {
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
             {
-                !isViewable ? (<View className="flex-1  p-2 bg-background  ">
+                !isViewable ? (
+                    <View className="flex-1  p-2 bg-background  ">
                     {/* title */}
                     <Text className="text-3xl font-extrabold text-baseFont">Saved events</Text>
 
