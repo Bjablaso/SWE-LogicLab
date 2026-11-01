@@ -1,46 +1,68 @@
-import { Stack } from "expo-router";
-import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
-import { StyleSheet, Text, View } from 'react-native';
+import { Tabs } from "expo-router";
+//import { Navbar } from '@components/Navbar';
+import "../global.css"
+import { useTheme } from '@/hooks/use-theme';
 
-export default function RootLayout() {
-  return (
-      <SafeAreaProvider>
-        <SafeAreaView edges={['top']}  style={styles.shell}>
-          <View style={styles.content}>
-            <Text style={styles.label}>Main content area</Text>
-          </View>
+import {SafeAreaProvider} from "react-native-safe-area-context";
 
-          <View style={styles.nav}>
-            <Text style={styles.label}>Navigation area</Text>
-          </View>
+import { AppThemeProvider } from '@/constants/app-theme-provider';
+import {Navbar} from "@/component/Navbar";
+import {EventContextProvider} from "@/context/EventContextProvider"
+import EventDetailScreen from "@/component/EventDetail";  // was '@constants/...'
 
-        </SafeAreaView>
-      </SafeAreaProvider>
-  );
+
+
+function ThemedTabs() {
+    const { colors } = useTheme();   // OK: this is inside the provider
+
+
+    return (
+        <>
+           {/*// <StatusBar style={isDark ? 'light' : 'dark'} />*/}
+            <Tabs
+                screenOptions={{
+                    headerShown: false,
+                    sceneStyle: { backgroundColor: colors.background
+                    },
+
+                }}
+                tabBar={(props) => <Navbar
+                    {...props}
+                   // backgroundColor={colors.background}
+                    //fontBaseColor={colors.baseFont}
+                />}
+            >
+
+                <Tabs.Screen name="Discover" />
+                <Tabs.Screen name="Saved" />
+                <Tabs.Screen name="Attending" />
+                <Tabs.Screen name="Account" />
+                <Tabs.Screen name="index" options={{ href: null }} />
+            </Tabs>
+        </>
+    );
 }
 
-const styles = StyleSheet.create({
-  shell: {
-    flex: 1,                 // fill the whole phone
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,                 // take all space above the nav
-    margin: 3,
-    borderWidth: 2,
-    borderStyle: 'dashed',   // dashed like the wireframe, just to see it
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nav: {
-    height: 64,              // fixed height
-  //  marginHorizontal: 8,
-    marginVertical: 3,
-    borderWidth: 2,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: { fontSize: 16, fontWeight: '700' },
-})
+export default function RootLayout() {
+    // no useTheme() here: the provider below hasn't rendered yet
+    return (
+        <SafeAreaProvider className="p-3">
+            <AppThemeProvider>
+                <EventContextProvider>
+                    <ThemedTabs />
+                </EventContextProvider>
+            </AppThemeProvider>
+        </SafeAreaProvider>
+    );
+}
+
+// <Tabs
+//     screenOptions={{ headerShown: false }}
+//     tabBar={(props) => <Navbar {...props} />}
+// >
+//     <Tabs.Screen name="Discover" />
+//     <Tabs.Screen name="Saved" />
+//     <Tabs.Screen name="Attending" />
+//     <Tabs.Screen name="Account" />
+//     <Tabs.Screen name="index" options={{ href: null }} />
+// </Tabs>

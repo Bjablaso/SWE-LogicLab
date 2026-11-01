@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    /* ---------- Font families + weights ---------- */
+    .font-sans             {
+        font-family: PublicSans_400Regular, sans-serif; }   /* 400: body, meta, input text */
+    .font-sans-semibold    {
+        font-family: PublicSans_600SemiBold, sans-serif; }  /* 600: nav labels, small buttons, chips */
+    .font-sans-bold        {
+        font-family: PublicSans_700Bold, sans-serif; }      /* 700: card titles, primary buttons */
+
+    .font-display-semibold {
+        font-family: Sora_600SemiBold, sans-serif; }        /* 600: sub-headings */
+    .font-display          {
+        font-family: Sora_700Bold, sans-serif; }            /* 700: screen titles, section headings */
+    .font-display-heavy    {
+        font-family: Sora_800ExtraBold, sans-serif; }       /* 800: date tile number, brand */
+
+    .font-mono             {
+        font-family: JetBrainsMono_500Medium, sans-serif; } /* 500: code */
+
+    /* ---------- Text sizes: MOBILE (default) ---------- */
+    /*                 size                 line height                  where it is used                          weight          */
+    .text-nav       { font-size: 0.6875rem;  line-height: 0.875rem; }  /* nav item label (tab bar), 11px         | sans-semibold  */
+    .text-caption   { font-size: 0.6875rem;  line-height: 0.875rem;
+        letter-spacing: 0.05rem; }                       /* small caps labels ("DATE & TIME"), 11px | sans-bold      */
+    .text-tile-mon  { font-size: 0.5625rem;  line-height: 0.75rem;  }  /* date tile month ("OCT"), 9px           | display-heavy  */
+    .text-meta      { font-size: 0.78125rem; line-height: 1.0625rem; } /* time · place, helper text, 12.5px      | sans           */
+    .text-button-sm { font-size: 0.8125rem;  line-height: 1.125rem; }  /* pill buttons (View, Cancel RSVP), 13px | sans-semibold  */
+    .text-body      { font-size: 0.84375rem; line-height: 1.1875rem; } /* paragraphs, descriptions, 13.5px       | sans           */
+    .text-title     { font-size: 0.9375rem;  line-height: 1.25rem;  }  /* card titles 700, input text 400, 15px  | sans-bold      */
+    .text-button    { font-size: 1rem;       line-height: 1.375rem; }  /* primary buttons (RSVP, Continue), 16px | sans-bold      */
+    .text-tile-day  { font-size: 1.1875rem;  line-height: 1.25rem;  }  /* date tile number ("30"), 19px          | display-heavy  */
+    .text-heading   { font-size: 1.25rem;    line-height: 1.625rem; }  /* section headings, 20px                 | display        */
+    .text-display   { font-size: 1.625rem;   line-height: 2rem;     }  /* screen titles (Discover, Saved), 26px  | display        */
+
+    /* ---------- Text sizes: WEB / wide screens (use with md:) ---------- */
+    .text-nav-web       { font-size: 0.875rem;  line-height: 1.25rem;  }  /* side-bar nav item label, 14px | sans-semibold */
+    .text-caption-web   { font-size: 0.75rem;   line-height: 1rem;
+        letter-spacing: 0.05rem; }                      /* small caps labels, 12px       | sans-bold     */
+    .text-meta-web      { font-size: 0.875rem;  line-height: 1.25rem;  }  /* time · place, 14px            | sans          */
+    .text-button-sm-web { font-size: 0.875rem;  line-height: 1.25rem;  }  /* pill buttons, 14px            | sans-semibold */
+    .text-body-web      { font-size: 1rem;      line-height: 1.5rem;   }  /* paragraphs, 16px              | sans          */
+    .text-title-web     { font-size: 1.0625rem; line-height: 1.5rem;   }  /* card titles, inputs, 17px     | sans-bold     */
+    .text-button-web    { font-size: 1rem;      line-height: 1.5rem;   }  /* primary buttons, 16px         | sans-bold     */
+    .text-heading-web   { font-size: 1.5rem;    line-height: 2rem;     }  /* section headings, 24px        | display       */
+    .text-display-web   { font-size: 2rem;      line-height: 2.5rem;   }  /* screen titles, 32px           | display       */
+
+    /* ---------- Icon sizes ---------- */
+    /* For SVG icons styled with className. Icon fonts (Ionicons) take a number:
+       mobile nav icon size={24}, web side-bar icon size={20}, inline icon size={16}. */
+    .icon-nav     { width: 1.5rem;  height: 1.5rem;  }  /* nav item icon, mobile tab bar, 24px */
+    .icon-nav-web { width: 1.25rem; height: 1.25rem; }  /* nav item icon, web side bar, 20px   */
+    .icon-inline  { width: 1rem;    height: 1rem;    }  /* icon beside text (time, place), 16px */
+    .icon-button  { width: 1.25rem; height: 1.25rem; }  /* icon inside a 44px round button, 20px */
+}
