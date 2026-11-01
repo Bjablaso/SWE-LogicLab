@@ -4,385 +4,193 @@ import {
     Text,
     TouchableOpacity,
     PanResponder,
+    ScrollView,
+    Animated,
+    NativeSyntheticEvent,
+    NativeScrollEvent,
 } from "react-native";
+import { FontAwesome, Feather } from "@expo/vector-icons";
 
 import { EventStore } from "@/insterface/eventInterface";
-import {useEventContext} from "@/context/useEventContext";
-
+import { useEventContext } from "@/context/useEventContext";
 
 interface EventDetailProps {
     eventStore: EventStore;
-
-    // saveEvent?: (currentEventID: number) => void;
-    // unsaveEvent?: (currentEventID: number) => void;
-    //
-    // attendEvent?: (currentEventID: number) => void;
-    // unattendEvent?: (currentEventID: number) => void;
-
     eventID: number;
-
     goBack: () => void;
 }
 
+const BAR_HEIGHT = 96;
 
-export default function EventDetail({
-                                        eventID,
-                                        goBack,
-                                        eventStore,
-
-                                    }: EventDetailProps) {
-
+export default function EventDetail({ eventID, goBack, eventStore }: EventDetailProps) {
     const state = eventStore;
-    const {attendEvent,
-        unattendEvent,
-        saveEvent,
-        unsaveEvent} = useEventContext()
 
-    // const attendEventFunc = attendEvent;
-    // const saveEventFunc = saveEvent;
-    // const unsaveEventFunc = unsaveEvent;
-    // const unattendEventFunc = unattendEvent;
+    const { attendEvent, unattendEvent, saveEvent, unsaveEvent } = useEventContext();
 
+    const event = state.events.find(e => e.eventId === eventID);
 
-    // TODO: MOVE TO useEventContext()
+    /*
+     * Hooks must run before any early return
+     */
+    const [saved, setSaved] = useState(event?.isSaved ?? false);
+    const [rsvpd, setRsvpd] = useState(event?.isRsvpd ?? false);
 
-    const event = state.events.find(
-        event => event.eventId === eventID
-    );
+    /*
+     * Bottom RSVP bar: hides when scrolling down, shows when scrolling up or at the top
+     */
+    const barOffset = useRef(new Animated.Value(0)).current;
+    const lastY = useRef(0);
+    const barHidden = useRef(false);
 
+    const showBar = (show: boolean) => {
+        if (barHidden.current === !show) return;
+        barHidden.current = !show;
+        Animated.timing(barOffset, {
+            toValue: show ? 0 : BAR_HEIGHT + 20,
+            duration: 200,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const y = e.nativeEvent.contentOffset.y;
+        if (y <= 0) showBar(true);
+        else if (y > lastY.current + 4) showBar(false);   // scrolling down
+        else if (y < lastY.current - 4) showBar(true);    // scrolling up
+        lastY.current = y;
+    };
+
+    /*
+     * Swipe LEFT → RIGHT to go back
+     */
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, g) => g.dx > 10 && Math.abs(g.dy) < 10,
+            onPanResponderRelease: (_, g) => {
+                if (g.dx > 80) goBack();
+            },
+        })
+    ).current;
 
     if (!event) {
         return (
-            <View>
-                <Text>Event not found</Text>
+            <View className="flex-1 items-center justify-center bg-background">
+                <Text className="text-baseFont">Event not found</Text>
             </View>
         );
     }
 
-
-    /*
-     * Local UI state
-     *
-     * false = user has NOT saved/RSVP'd
-     * true  = user HAS saved/RSVP'd
-     */
-    const [saved, setSaved] = useState(event.isSaved);
-    const [rsvpd, setRsvpd] = useState(event.isRsvpd);
-
-
     /*
      * Event information
      */
+    const attending = event.capacity - event.spotsLeft;
+    const format = { in_person: "In person", online: "Online", hybrid: "Hybrid" }[event.format];
 
-    const attending =
-        event.capacity - event.spotsLeft;
+    const toggleSave = () => {
+        if (saved) unsaveEvent(eventID);
+        else saveEvent(eventID);
+        setSaved(!saved);
+    };
 
+    const toggleRsvp = () => {
+        if (rsvpd) unattendEvent(eventID);
+        else attendEvent(eventID);
+        setRsvpd(!rsvpd);
+        goBack()
+    };
 
-    const format = {
-        in_person: "In person",
-        online: "Online",
-        hybrid: "Hybrid",
-    }[event.format];
-
-
-    /*
-     * Swipe LEFT → RIGHT
-     *
-     * Positive dx means the user's finger
-     * is moving toward the right.
-     */
-
-    const panResponder = useRef(
-        PanResponder.create({
-
-            onMoveShouldSetPanResponder: (_, gestureState) => {
-
-                return gestureState.dx > 10;
-
-            },
-
-
-            onPanResponderRelease: (_, gestureState) => {
-
-                if (gestureState.dx > 80) {
-
-                    goBack();
-
-                }
-
-            },
-
-        })
-    ).current;
-
-
-    /*
-     * Small reusable information component
-     */
-
-    const Info = ({
-                      label,
-                      value,
-                  }: {
-        label: string;
-        value: string;
-    }) => (
-
+    const Info = ({ label, value }: { label: string; value: string }) => (
         <View className="mb-4 w-1/2 pr-3">
-
-            <Text className="text-xs font-bold uppercase tracking-widest text-muted">
-                {label}
-            </Text>
-
-            <Text className="mt-1 text-base text-baseFont">
-                {value}
-            </Text>
-
+            <Text className="text-[11px] font-bold uppercase tracking-widest text-muted">{label}</Text>
+            <Text className="mt-1 text-[15px] text-baseFont">{value}</Text>
         </View>
-
     );
-
 
     return (
+        <View className="flex-1 bg-background" {...panResponder.panHandlers}>
+            <ScrollView
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                contentContainerStyle={{ paddingBottom: BAR_HEIGHT + 24 }}
+                contentContainerClassName="px-5 pt-4"
+            >
+                {/* HEADER: category + heart */}
+                <View className="flex-row items-center justify-between">
+                    <Text className="text-xs font-bold uppercase tracking-widest text-muted">
+                        {event.category}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={toggleSave}
+                        className="h-11 w-11 items-center justify-center rounded-full border border-control"
+                    >
+                        <FontAwesome
+                            name={saved ? "heart" : "heart-o"}
+                            size={20}
+                            color={saved ? "#FF4D6D" : "#9E9A90"}
+                        />
+                    </TouchableOpacity>
+                </View>
 
-        <View
-            className="flex-1 p-2 bg-background "
-            {...panResponder.panHandlers}
-        >
-
-
-            {/* MAIN CONTENT */}
-
-            <View className="flex-1 flex-col gap-5 p-2  w-full">
-
-
-                {/* HEADER */}
-
-                <Text className="text-xs font-bold uppercase tracking-widest text-muted">
-
-                    {event.category}
-
-                </Text>
-
-
-                <Text className="mt-1 text-3xl font-extrabold text-baseFont">
-
-                    {event.title}
-
-                </Text>
-
-
+                <Text className="mt-1 text-3xl font-extrabold text-baseFont">{event.title}</Text>
 
                 {/* STATS */}
-
                 <View className="mt-4 flex-row gap-3">
-
-
-                    <View className="flex-row items-baseline gap-2 rounded-2xl border border-border px-4 py-3">
-
-                        <Text className="text-3xl font-extrabold text-accent">
-
-                            {attending}
-
-                        </Text>
-
-                        <Text className="text-sm text-muted">
-
-                            attending
-
-                        </Text>
-
+                    <View className="flex-1 flex-row items-baseline gap-2 rounded-2xl border border-border bg-surface px-4 py-3">
+                        <Text className="text-3xl font-extrabold text-accent">{attending}</Text>
+                        <Text className="text-sm text-muted">attending</Text>
                     </View>
-
-
-
-                    <View className="flex-row items-baseline gap-2 rounded-2xl border border-border px-4 py-3">
-
-                        <Text className="text-3xl font-extrabold text-accent">
-
-                            {event.spotsLeft}
-
-                        </Text>
-
-                        <Text className="text-sm text-muted">
-
-                            spots left
-
-                        </Text>
-
+                    <View className="flex-1 flex-row items-baseline gap-2 rounded-2xl border border-border bg-surface px-4 py-3">
+                        <Text className="text-3xl font-extrabold text-accent">{event.spotsLeft}</Text>
+                        <Text className="text-sm text-muted">spots left</Text>
                     </View>
-
-
                 </View>
 
-
+                <View className="my-5 h-px bg-border" />
 
                 {/* DETAILS GRID */}
-
-                <View className="mt-6 flex-row flex-wrap">
-
-
-                    <Info
-                        label="Date & time"
-                        value={`${event.eventDate} · ${event.startTime}–${event.endTime}`}
-                    />
-
-
-                    <Info
-                        label="Format"
-                        value={format ?? event.format}
-                    />
-
-
-                    <Info
-                        label="Venue"
-                        value={event.location}
-                    />
-
-
-                    <Info
-                        label="Availability"
-                        value={`${event.spotsLeft} of ${event.capacity} spots open`}
-                    />
-
-
+                <View className="flex-row flex-wrap">
+                    <Info label="Date & time" value={`${event.eventDate} · ${event.startTime}–${event.endTime}`} />
+                    <Info label="Format" value={format ?? event.format} />
+                    <Info label="Venue" value={event.location} />
+                    <Info label="Availability" value={`${event.spotsLeft} of ${event.capacity} spots open`} />
                 </View>
 
-
+                <View className="h-px bg-border" />
 
                 {/* ABOUT */}
+                <Text className="mt-5 text-[11px] font-bold uppercase tracking-widest text-muted">About</Text>
+                <Text className="mt-1 text-[15px] leading-6 text-baseFont">{event.description}</Text>
+            </ScrollView>
 
-                <Text className="text-xs font-bold uppercase tracking-widest text-muted">
-
-                    About
-
-                </Text>
-
-
-                <Text className="mt-1 text-base leading-6 text-baseFont">
-
-                    {event.description}
-
-                </Text>
-
-
-            </View>
-
-
-
-            {/* BOTTOM ACTIONS */}
-
-            <View className="flex-row gap-3 border-t border-border pt-5">
-
-
-                {/* SAVE BUTTON SLOT
-                    The View always stays in the layout.
-                    Only the button disappears.
-                */}
-
-                <View className="flex-1">
-
-
-                    {!saved && (
-
-                        <TouchableOpacity
-
-                            onPress={() => {
-
-                                /*
-                                 * Mark event as saved locally.
-                                 */
-
-                                setSaved(true);
-
-
-                                /*
-                                 * Update global event state.
-                                 */
-                                saveEvent(eventID)
-
-                                // if (saveEventFunc) {
-                                //
-                                //     saveEventFunc(eventID);
-                                //
-                                // }
-
-                            }}
-
-                            className="items-center rounded-full border border-control px-5 py-3"
-                        >
-
-                            <Text className="font-bold text-baseFont">
-
-                                SAVE
-
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    )}
-
-
-                </View>
-
-
-
-                {/* RSVP BUTTON SLOT
-                    Same idea:
-                    slot stays, button disappears.
-                */}
-
-                <View className="flex-1">
-
-
-                    {!rsvpd && (
-
-                        <TouchableOpacity
-
-                            onPress={() => {
-
-                                /*
-                                 * Mark event as RSVP'd locally.
-                                 */
-
-                                setRsvpd(true);
-
-
-                                /*
-                                 * Update global event state.
-                                 */
-                                attendEvent(eventID)
-
-                                // if (attendEventFunc) {
-                                //
-                                //     attendEventFunc(eventID);
-                                //
-                                // }
-
-                            }}
-
-                            className="items-center rounded-full bg-accent px-6 py-3"
-                        >
-
-                            <Text className="font-bold text-black">
-
-                                RSVP
-
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    )}
-
-
-                </View>
-
-
-            </View>
-
-
+            {/* BOTTOM RSVP BAR (slides away on scroll down) */}
+            {/* BOTTOM RSVP BAR (slides away on scroll down) */}
+            <Animated.View
+                style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: BAR_HEIGHT,
+                    justifyContent: "center",
+                    paddingHorizontal: 20,
+                    zIndex: 10,
+                    elevation: 10,
+                    transform: [{ translateY: barOffset }],
+                }}
+            >
+                <View className="absolute inset-0 border-t border-border bg-background" />
+                <TouchableOpacity
+                    onPress={toggleRsvp}
+                    className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
+                        rsvpd ? "border border-accent" : "bg-accent"
+                    }`}
+                >
+                    <Feather name={rsvpd ? "check" : "calendar"} size={18} color={rsvpd ? "#FFC800" : "#121212"} />
+                    <Text className={`text-base font-bold ${rsvpd ? "text-accent" : "text-black"}`}>
+                        {rsvpd ? "Going · tap to cancel" : "RSVP"}
+                    </Text>
+                </TouchableOpacity>
+            </Animated.View>
         </View>
-
     );
-
 }
