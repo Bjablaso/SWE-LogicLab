@@ -26,3 +26,35 @@ The initial version will be developed as a web application using a database for 
 - Ankith Rajashekar (https://github.com/ankith860)
 - Natalie Piltoyan (https://github.com/natpil)
 - Nyeswaty Socree (https://github.com/nsocree)
+
+## Backend Database Setup
+
+The PostgreSQL schema for the UC-3 and UC-4 backend tables is in `backend/schema.sql`.
+To create the tables in a fresh database and load the sample data, run:
+
+```bash
+psql "<PostgreSQL connection string>" -f backend/schema.sql
+psql "<PostgreSQL connection string>" -f backend/seed.sql
+```
+
+The seed script creates sample student `1`, categories, interests, and events. It
+skips existing categories, interests, events, and relationship rows so it can be
+run again without duplicating those samples. Keep connection strings and passwords
+out of source control.
+
+## Deploying the Backend to Render
+
+The root `render.yaml` configures a Python web service using `backend` as its root,
+installs `backend/requirements.txt`, starts the FastAPI app with Uvicorn, and uses
+`/health` for its health check. When creating the Render Blueprint, set the
+`DATABASE_URL` environment variable in Render to the PostgreSQL connection string;
+do not commit it to this repository.
+
+After deployment, set `CORS_ORIGINS` in the Render service environment to the
+frontend's origin (for example, `https://your-frontend.example.com`). Multiple
+origins can be separated by commas. The backend defaults to the local development
+origins `http://localhost:5173` and `http://localhost:8081`.
+
+The deployed API base URL can then be used by the frontend instead of
+`http://127.0.0.1:8000`. Check `/health` and `/docs` on the deployed service after
+the first deploy.
