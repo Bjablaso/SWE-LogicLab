@@ -35,7 +35,7 @@ export const userEvent : EventStore = {
             "imageUrl": "",
             "capacity": 150,
             "spotsLeft": 120,
-            "isSaved": true,
+            "isSaved": false,
             "isRsvpd": false,
             "isRecommended": false
         },
@@ -52,8 +52,8 @@ export const userEvent : EventStore = {
             "imageUrl": "",
             "capacity": 100,
             "spotsLeft": 75,
-            "isSaved": true,
-            "isRsvpd": true,
+            "isSaved": false,
+            "isRsvpd": false,
             "isRecommended": false
         },
     ],
@@ -69,48 +69,121 @@ export function userEventReducer(
 ): EventStore {
     switch (action.type) {
 
-        case "SAVED":{
+        case "SAVED": {
 
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
 
-            // find the the item we are looking for
-            const targetEvent = state.events.find( event => event.eventId === action.payload.eventId)
-
-            if(!targetEvent || !targetEvent.isSaved){
-                return  state
+            // Event doesn't exist
+            if (!targetEvent) {
+                return state;
             }
-            // saved it
+
+            // Event is already saved
+            if (targetEvent.isSaved) {
+                return state;
+            }
+
+            // Change isSaved from false → true
             const updatedEvents = state.events.map(event =>
                 event.eventId === action.payload.eventId
                     ? { ...event, isSaved: true }
                     : event
             );
 
+            return {
+                ...state,
+                events: updatedEvents
+            };
+        }
+        case "UNSAVED": {
+            // Find the event we are looking for
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
+
+            // Event doesn't exist
+            if (!targetEvent) {
+                return state;
+            }
+
+            // Event is already NOT saved
+            if (!targetEvent.isSaved) {
+                return state;
+            }
+
+            // Change isSaved from true → false
+            const updatedEvents = state.events.map(event =>
+                event.eventId === action.payload.eventId
+                    ? { ...event, isSaved: false }
+                    : event
+            );
+
+            // Update current state and return
+            return {
+                ...state,
+                events: updatedEvents
+            };
+        }
+        case "ATTEND": {
+
+            // Find the event
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
+
+            // Event does not exist
+            if (!targetEvent) {
+                return state;
+            }
+
+            // User is already attending
+            if (targetEvent.isRsvpd) {
+                return state;
+            }
+
+            // Update the selected event
+            const updatedEvents = state.events.map(event =>
+                event.eventId === action.payload.eventId
+                    ? { ...event, isRsvpd: true }
+                    : event
+            );
 
             return {
                 ...state,
                 events: updatedEvents
-            }
+            };
         }
-        case "UNSAVED":{
-            // find what we are look for
-            const targetEvent = state.events.find( event => event.eventId === action.payload.eventId)
 
-            // if not exist return current state
-            if(!targetEvent){
-                return  state
+        case "UNATTEND": {
+            // Find the event we are looking for
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
+
+            // Event doesn't exist
+            if (!targetEvent) {
+                return state;
             }
-            // unsave event
-            const updateEvents = state.events.map(event =>
-            event.eventId === action.payload.eventId
-            ? { ...event, isSaved: false }
-            : event)
 
+            // Event is already NOT attending
+            if (!targetEvent.isRsvpd) {
+                return state;
+            }
 
-            // update current state and return
+            // Change isRsvpd from true → false
+            const updatedEvents = state.events.map(event =>
+                event.eventId === action.payload.eventId
+                    ? { ...event, isRsvpd: false }
+                    : event
+            );
+
+            // Update current state and return
             return {
                 ...state,
-                events: updateEvents
-            }
+                events: updatedEvents
+            };
         }
         default:
             return state;

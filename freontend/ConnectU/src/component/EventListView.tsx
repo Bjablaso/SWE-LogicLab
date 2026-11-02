@@ -70,7 +70,7 @@ export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProp
                 showsVerticalScrollIndicator={false}
             >
                 <TitleCard />
-                <DiscoverSectionHeader text="Recommended for you" />
+                <DiscoverSectionHeader text="Recommended for you" textSize="xxl" />
                 {recommendedEvents.map(event => (
                     <TouchableOpacity
                         key={event.eventId}
@@ -79,7 +79,7 @@ export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProp
                         <EventCard event={event} />
                     </TouchableOpacity>
                 ))}
-                <DiscoverSectionHeader text="Upcoming events" />
+                <DiscoverSectionHeader text="Upcoming events" textSize="xxl" />
                 {sortedEvents.map(event => (
                     <TouchableOpacity
                         key={event.eventId}

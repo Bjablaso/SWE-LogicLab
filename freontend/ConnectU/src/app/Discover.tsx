@@ -5,7 +5,7 @@ import { TouchableOpacity } from 'react-native';
 
 import Feather from '@expo/vector-icons/Feather';
 import {cssInterop} from "nativewind";
-import  {useTheme} from "@/hooks/use-theme";
+
 import {TitleCard} from "@/component/TitleCard";
 import {EventCard} from "@/component/EventCard";
 import EventDetail from "@/component/EventDetail";
@@ -26,88 +26,11 @@ cssInterop(Feather, {
     },
 });
 
-interface TopContainerProps {
-    childrenOne?: React.ReactNode;
-
-}
-
-const Search = () =>{
-    const { colors } = useTheme();
-
-    return(
-        <View
-            className="
-        w-[95%] h-[75%]
-        flex-row items-center
-        px-5 gap-4
-        shadow-lg
-        rounded-[32px]
-    "
-            style={{
-                backgroundColor: colors.surface,
-                shadowColor: colors.baseGray100,
-            }}
-        >
-            {/* LEFT — Search Icon */}
-
-            <TouchableOpacity
-            >
-                <Feather
-                    name="search"
-                    size={24}
-                    color={colors.baseFont}
-
-                />
-            </TouchableOpacity>
-
-
-            {/* CENTER — Takes all remaining space */}
-            <TextInput
-                className="flex-1 text-xl p-0"
-                style={{
-                    color: colors.baseFont,
-                }}
-                placeholder="Search..."
-                placeholderTextColor={colors.baseFont}
-                selectionColor={colors.baseFont}
-            />
-
-            {/* RIGHT — Filter Circle */}
-            <View
-                className="w-10 h-10 rounded-full items-center justify-center "
-                style={{
-                    borderColor: colors.baseGray100,
-                }}
-            >
-                <TouchableOpacity
-                >
-                    <Ionicons
-                        name="filter"
-                        size={20}
-                        color={colors.baseFont}
-                    />
-                </TouchableOpacity>
-
-
-
-            </View>
-        </View>
-
-    )
-}
 interface BottomContainerState {
     eventID: number;
     isClick: boolean;
 }
-const TopContainer = ({childrenOne}: TopContainerProps) =>{
-    return (
-        <View className="w-full h-[13%]">
-            <View className="w-full h-full items-center justify-center">
-                {childrenOne}
-            </View>
-        </View>
-    )
-}
+
 const BottomContainer = () =>{
     const defaultDetailState: BottomContainerState = {
         eventID: 0,
@@ -117,7 +40,7 @@ const BottomContainer = () =>{
         eventID: 0,
         isClick: false
     });
-   const {state} = useEventContext()
+    const {state} = useEventContext()
 
     useFocusEffect(
         useCallback(() => {
@@ -142,7 +65,7 @@ const BottomContainer = () =>{
     }
     return (
         <View
-        className="w-full h-[87%] pt-2 px-4 ">
+            className="flex-1 pt-2 px-4 ">
             {!seeDetails.isClick && (
                 <EventListView
                     eventState={state}
@@ -170,15 +93,9 @@ export default function Discover() {
         <SafeAreaView edges={["top"]}
                       className="flex-1 flex-col "
         >
-            <TopContainer
-                childrenOne={<Search />}
-
-            />
-            <BottomContainer>
-
-
-            </BottomContainer>
+            <BottomContainer/>
 
         </SafeAreaView>
     );
 }
+//
