@@ -47,10 +47,10 @@ const TextOutliner = ({titleSize, bodySize,
                           title,body}:TextOutlinerProps) =>{
 
     return (
-        <View className={`flex flex-col  
+        <View className={`flex flex-col
         ${className}`}>
             <Text className={`${TextOutlinerMapper[titleSize]}  ${TextColorMapper[titleColor]}
-             
+
              `}> {title}</Text>
             <View className="pl-1">
                 <Text

@@ -75,6 +75,7 @@ const BottomContainer = () =>{
 
             {seeDetails.isClick && (
                 <EventDetail
+                    key={seeDetails.eventID}
                     eventStore={state}
                     eventID={seeDetails.eventID}
                     goBack={goBack}

@@ -93,7 +93,7 @@ export const interestsData = {
     ] satisfies InterestCategory[],
 };
 
-export default function (){
+export default function InterestContainer() {
     return(
         <View className="flex-row w-full">
 

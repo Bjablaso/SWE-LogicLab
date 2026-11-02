@@ -1,10 +1,5 @@
 import data from "../../connectU.json"
 import { View, Text } from 'react-native';
-interface TitleCardProps {
-    universityName: string
-    welcomeInstruciton: string
-    description: string
-}
 export const TitleCard = () => {
     const universityName = data.user.discover.titleCard.universityName
     const welcomeInstruciton = data.user.discover.titleCard.welcomeInstruciton
@@ -26,5 +21,3 @@ export const TitleCard = () => {
         </View>
     )
 }
-
-

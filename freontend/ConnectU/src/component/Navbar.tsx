@@ -22,6 +22,11 @@ type Tab = {
 // href must match your file names exactly (capital letters)
 const TABS: Tab[] = [
     {
+        href: "/",
+        label: "Events",
+        icon: (c) => <AntDesign name="calendar" size={24} color={c} />,
+    },
+    {
         href: "/Discover",
         label: "Discover",
         icon: (c) => <AntDesign name="compass" size={24} color={c} />,
@@ -53,7 +58,6 @@ export function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const { colors } = useTheme();
-    const fontColor = colors.baseFont
     // OK: this is inside the provider
 
 
