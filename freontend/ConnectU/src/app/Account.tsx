@@ -1,6 +1,7 @@
-import {Text, StyleSheet, View} from "react-native";
+import {Text, StyleSheet, View, ScrollView} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {DiscoverSectionHeader} from "@/component/DiscoverSectionHeader";
+import InterestContainer from "@/component/InterestContainer";
 
 
 const accountProfileSettings = ["Profile", "Interest", "Notification", "Following", "Friends", 'Privacy',
@@ -97,27 +98,31 @@ const ProfileCard = () =>{
             </View>
 
 
+
+
         </View>
     )
 }
 export default function Account() {
-
     return (
-        <SafeAreaView edges={["top"]} className="flex-1 ">
-            <View className="flex-1 justify-start p-4 border-2 border-white">
-                <DiscoverSectionHeader
-                    text="Acount"
-                    textSize="xxxl"
-                />
-                <ProfileCard/>
+        <SafeAreaView edges={["top"]} className="flex-1">
+            {/*<View className="flex-1 p-4">*/}
 
 
-            </View>
-
+                <ScrollView
+                    className="flex-1 px-4"
+                    contentContainerStyle={{ gap: 16, paddingBottom: 32 }}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                >
+                    <DiscoverSectionHeader text="Account" textSize="xxxl" />
+                    <ProfileCard />
+                    <InterestContainer />
+                </ScrollView>
+            {/*</View>*/}
         </SafeAreaView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
