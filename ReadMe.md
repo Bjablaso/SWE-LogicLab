@@ -58,3 +58,64 @@ origins `http://localhost:5173` and `http://localhost:8081`.
 The deployed API base URL can then be used by the frontend instead of
 `http://127.0.0.1:8000`. Check `/health` and `/docs` on the deployed service after
 the first deploy.
+
+## Campus Connect - Run Instructions
+
+### Requirements
+
+- Node.js
+- npm
+- Internet connection
+
+### Start the web application
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/nsocree/SWE-LogicLab-NS.git
+   ```
+
+2. Open the project:
+
+   ```bash
+   cd SWE-LogicLab-NS
+   ```
+
+3. Go to the frontend project folder:
+
+   ```bash
+   cd freontend/ConnectU
+   ```
+
+4. Install frontend dependencies:
+
+   ```bash
+   npm install
+   ```
+
+5. Make sure a `.env` file exists in `freontend/ConnectU` with this setting:
+
+   ```env
+   EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com
+   ```
+
+   Create the file with that content if it is not already present.
+
+6. Start the web application:
+
+   ```bash
+   npm run web
+   ```
+
+7. Open the URL printed by Expo. It is typically:
+
+   ```text
+   http://localhost:8081
+   ```
+
+   Expo may instead show `http://127.0.0.1:8081`; either address opens the local
+   application. The frontend connects to the deployed backend and requires an
+   internet connection.
+
+> **Note:** The backend is hosted on Render's free tier. The first request may
+> take several seconds if the service has been inactive.
