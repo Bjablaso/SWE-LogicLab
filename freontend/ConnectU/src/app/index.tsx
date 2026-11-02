@@ -20,6 +20,7 @@ import {
 } from "../services/api";
 
 type EventAction = "save" | "rsvp";
+type DetailsSource = "recommendation" | "event";
 
 interface ActionNotice {
   eventId: number;
@@ -46,6 +47,8 @@ export default function Index() {
   const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(
     null,
   );
+  const [detailsEventId, setDetailsEventId] = useState<number | null>(null);
+  const [detailsSource, setDetailsSource] = useState<DetailsSource>("event");
   const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null);
   const [detailsError, setDetailsError] = useState("");
   const [viewNotice, setViewNotice] = useState("");
@@ -125,7 +128,13 @@ export default function Index() {
     }
   }
 
-  async function handleViewDetails(eventId: number) {
+  async function handleViewDetails(
+    eventId: number,
+    source: DetailsSource,
+  ) {
+    setDetailsEventId(eventId);
+    setDetailsSource(source);
+    setSelectedEvent(null);
     setDetailsLoadingId(eventId);
     setDetailsError("");
     setViewNotice("");
@@ -269,61 +278,39 @@ export default function Index() {
           {recommendations.slice(0, 3).map((recommendation) => (
             <View
               key={recommendation.event_id}
-              style={styles.recommendation}
+              style={styles.recommendationGroup}
             >
-              <View style={styles.recommendationText}>
-                <Text style={styles.title}>{recommendation.title}</Text>
-                <Text style={styles.details}>
-                  Relevance score: {recommendation.relevance_score}
-                </Text>
+              <View style={styles.recommendation}>
+                <View style={styles.recommendationText}>
+                  <Text style={styles.title}>{recommendation.title}</Text>
+                  <Text style={styles.details}>
+                    Relevance score: {recommendation.relevance_score}
+                  </Text>
+                </View>
+                <Button
+                  title={
+                    detailsLoadingId === recommendation.event_id
+                      ? "Loading..."
+                      : "View Details"
+                  }
+                  disabled={detailsLoadingId !== null}
+                  onPress={() =>
+                    handleViewDetails(recommendation.event_id, "recommendation")
+                  }
+                />
               </View>
-              <Button
-                title={
-                  detailsLoadingId === recommendation.event_id
-                    ? "Loading..."
-                    : "View Details"
-                }
-                disabled={detailsLoadingId !== null}
-                onPress={() => handleViewDetails(recommendation.event_id)}
-              />
+              {detailsSource === "recommendation" &&
+              detailsEventId === recommendation.event_id ? (
+                <EventDetails
+                  event={selectedEvent}
+                  loading={detailsLoadingId === recommendation.event_id}
+                  error={detailsError}
+                  viewNotice={viewNotice}
+                />
+              ) : null}
             </View>
           ))}
         </View>
-
-        {selectedEvent ? (
-          <View style={styles.detailsPanel}>
-            <Text style={styles.sectionHeading}>Event Details</Text>
-            <Text style={styles.title}>{selectedEvent.title}</Text>
-            <Text>{selectedEvent.description}</Text>
-            {selectedEvent.location ? (
-              <Text style={styles.details}>
-                Location: {selectedEvent.location}
-              </Text>
-            ) : null}
-            <Text style={styles.details}>
-              Starts: {new Date(selectedEvent.start_datetime).toLocaleString()}
-            </Text>
-            {selectedEvent.end_datetime ? (
-              <Text style={styles.details}>
-                Ends: {new Date(selectedEvent.end_datetime).toLocaleString()}
-              </Text>
-            ) : null}
-            {selectedEvent.capacity !== null ? (
-              <Text style={styles.details}>
-                Capacity: {selectedEvent.capacity}
-              </Text>
-            ) : null}
-            <Text style={styles.details}>Status: {selectedEvent.status}</Text>
-            {viewNotice ? (
-              <Text style={styles.success}>{viewNotice}</Text>
-            ) : null}
-            {detailsError ? (
-              <Text accessibilityRole="alert" style={styles.error}>
-                {detailsError}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
 
         <Text style={styles.sectionHeading}>Discover Events</Text>
         {events.map((event) => (
@@ -347,7 +334,7 @@ export default function Index() {
                     : "View Details"
                 }
                 disabled={detailsLoadingId !== null}
-                onPress={() => handleViewDetails(event.event_id)}
+                onPress={() => handleViewDetails(event.event_id, "event")}
               />
               <Button
                 title={
@@ -381,6 +368,14 @@ export default function Index() {
               >
                 {actionNotice.message}
               </Text>
+            ) : null}
+            {detailsSource === "event" && detailsEventId === event.event_id ? (
+              <EventDetails
+                event={selectedEvent}
+                loading={detailsLoadingId === event.event_id}
+                error={detailsError}
+                viewNotice={viewNotice}
+              />
             ) : null}
           </View>
         ))}
@@ -456,6 +451,9 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
+  recommendationGroup: {
+    gap: 8,
+  },
   event: {
     gap: 8,
     padding: 16,
@@ -489,3 +487,63 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 });
+
+interface EventDetailsProps {
+  event: EventResponse | null;
+  loading: boolean;
+  error: string;
+  viewNotice: string;
+}
+
+function EventDetails({
+  event,
+  loading,
+  error,
+  viewNotice,
+}: EventDetailsProps) {
+  if (loading) {
+    return (
+      <View style={styles.detailsPanel}>
+        <ActivityIndicator accessibilityLabel="Loading event details" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.detailsPanel}>
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
+      </View>
+    );
+  }
+
+  if (!event) {
+    return null;
+  }
+
+  return (
+    <View style={styles.detailsPanel}>
+      <Text style={styles.sectionHeading}>Event Details</Text>
+      <Text style={styles.title}>{event.title}</Text>
+      <Text>{event.description}</Text>
+      {event.location ? (
+        <Text style={styles.details}>Location: {event.location}</Text>
+      ) : null}
+      <Text style={styles.details}>
+        Starts: {new Date(event.start_datetime).toLocaleString()}
+      </Text>
+      {event.end_datetime ? (
+        <Text style={styles.details}>
+          Ends: {new Date(event.end_datetime).toLocaleString()}
+        </Text>
+      ) : null}
+      {event.capacity !== null ? (
+        <Text style={styles.details}>Capacity: {event.capacity}</Text>
+      ) : null}
+      <Text style={styles.details}>Status: {event.status}</Text>
+      {viewNotice ? <Text style={styles.success}>{viewNotice}</Text> : null}
+    </View>
+  );
+}
