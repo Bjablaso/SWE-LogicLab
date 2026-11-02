@@ -97,33 +97,34 @@ export function userEventReducer(
                 events: updatedEvents
             };
         }
-        case "UNSAVED":{
-            // find what we are look for
-            const targetEvent = state.events.find( event => event.eventId === action.payload.eventId)
-
+        case "UNSAVED": {
+            // Find the event we are looking for
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
 
             // Event doesn't exist
             if (!targetEvent) {
                 return state;
             }
 
-            // Event is already saved
-            if (targetEvent.isSaved) {
+            // Event is already NOT saved
+            if (!targetEvent.isSaved) {
                 return state;
             }
 
-            // Change isSaved from false → true
+            // Change isSaved from true → false
             const updatedEvents = state.events.map(event =>
                 event.eventId === action.payload.eventId
-                    ? { ...event, isSaved: true }
+                    ? { ...event, isSaved: false }
                     : event
             );
 
-            // update current state and return
+            // Update current state and return
             return {
                 ...state,
                 events: updatedEvents
-            }
+            };
         }
         case "ATTEND": {
 
@@ -154,12 +155,36 @@ export function userEventReducer(
                 events: updatedEvents
             };
         }
-         //TODO : WRITE UNATTEND
-            case "UNATTEND":{
-                return {
-                    ...state,
-                }
+
+        case "UNATTEND": {
+            // Find the event we are looking for
+            const targetEvent = state.events.find(
+                event => event.eventId === action.payload.eventId
+            );
+
+            // Event doesn't exist
+            if (!targetEvent) {
+                return state;
             }
+
+            // Event is already NOT attending
+            if (!targetEvent.isRsvpd) {
+                return state;
+            }
+
+            // Change isRsvpd from true → false
+            const updatedEvents = state.events.map(event =>
+                event.eventId === action.payload.eventId
+                    ? { ...event, isRsvpd: false }
+                    : event
+            );
+
+            // Update current state and return
+            return {
+                ...state,
+                events: updatedEvents
+            };
+        }
         default:
             return state;
     }
