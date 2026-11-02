@@ -3,7 +3,6 @@ import {useEventContext} from "@/context/useEventContext"
 import { DiscoverSectionHeader } from "@/component/DiscoverSectionHeader";
 import {useCallback, useEffect, useState} from "react";
 import {EventCard} from "@/component/EventCard";
-import DeviceCountry, { TYPE_TELEPHONY, TYPE_CONFIGURATION } from 'react-native-device-country';
 import {TitleCard} from "@/component/TitleCard";
 import { EventStore} from "@/insterface/eventInterface";
 import {SafeAreaView} from "react-native-safe-area-context";
@@ -171,17 +170,19 @@ export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProp
 
                         <DiscoverSectionHeader
                             text="Recommended for you"
+                            textSize="xxl"
                         />
 
                         {recommendedEvents.map(event => (
                             <TouchableOpacity
+                                key={event.eventId}
                                 onPress={() => {
                                     isLoadDetailScreen(true, event.eventId)
 
                                 }}
                             >
                                 <EventCard
-                                    key={event.eventId}
+
                                     event={event}
                                 />
                             </TouchableOpacity>
@@ -192,17 +193,19 @@ export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProp
 
                         <DiscoverSectionHeader
                             text="Upcoming events"
+                            textSize="xxl"
                         />
 
                         {sortedEvents.map(event => (
                             <TouchableOpacity
+                                key={event.eventId}
                                 onPress={() => {
                                     isLoadDetailScreen(true, event.eventId)
 
                                 }}
                             >
                                 <EventCard
-                                    key={event.eventId}
+
                                     event={event}
                                 />
                             </TouchableOpacity>
@@ -222,10 +225,12 @@ export const EventListView = ({eventState, isLoadDetailScreen}:EventListViewProp
 
                 <DiscoverSectionHeader
                     text="Recommended for you"
+                    textSize="xxxl"
                 />
 
                 <DiscoverSectionHeader
                     text="Recommended for you"
+                    textSize="xxxl"
                 />
             </ScrollView>
         )
