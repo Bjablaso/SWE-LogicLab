@@ -63,45 +63,101 @@ the first deploy.
 
 ### Requirements
 
-- Node.js
-- npm
+- Windows, macOS, or Linux
+- Node.js LTS and npm
 - Internet connection
 
 ### Start the web application
 
-1. Clone the repository:
+1. Install Node.js LTS, which includes npm:
 
-   ```bash
-   git clone https://github.com/nsocree/SWE-LogicLab-NS.git
+   **Windows PowerShell:**
+
+   ```powershell
+   winget install OpenJS.NodeJS.LTS
    ```
 
-2. Open the project:
+   **Bash/Zsh (macOS with Homebrew):**
 
    ```bash
-   cd SWE-LogicLab-NS
+   brew install node
+   ```
+
+   **Bash/Zsh (using nvm):**
+
+   Install [nvm](https://github.com/nvm-sh/nvm) for your shell, then run:
+
+   ```bash
+   nvm install --lts
+   ```
+
+   Close and reopen your terminal after installing Node.js, then verify the
+   commands are available:
+
+   ```bash
+   node --version
+   npm --version
+   ```
+
+2. Clone the repository:
+
+   **PowerShell:**
+
+   ```powershell
+   git clone https://github.com/Bjablaso/SWE-LogicLab.git
+   ```
+
+   **Bash/Zsh:**
+
+   ```bash
+   git clone https://github.com/Bjablaso/SWE-LogicLab.git
    ```
 
 3. Go to the frontend project folder:
 
-   ```bash
-   cd freontend/ConnectU
+   ```powershell
+   cd .\SWE-LogicLab\freontend\ConnectU
    ```
 
+   ```bash
+   cd ./SWE-LogicLab/freontend/ConnectU
+   ```
+
+   If your terminal is already in the repository folder, use `cd .\freontend\ConnectU`
+   in PowerShell or `cd ./freontend/ConnectU` in Bash/Zsh.
+
 4. Install frontend dependencies:
+
+   ```powershell
+   npm install
+   ```
 
    ```bash
    npm install
    ```
 
-5. Make sure a `.env` file exists in `freontend/ConnectU` with this setting:
+5. Make sure a `.env` file exists in `freontend\ConnectU` (PowerShell) or
+   `freontend/ConnectU` (Bash/Zsh) with this setting:
 
    ```env
    EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com
    ```
 
-   Create the file with that content if it is not already present.
+   If the file does not exist, create it from the frontend folder:
+
+   ```powershell
+   Set-Content .env "EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com"
+   ```
+
+   ```bash
+   printf '%s\n' 'EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com' > .env
+   ```
 
 6. Start the web application:
+
+   ```powershell
+   npm run web
+   ```
 
    ```bash
    npm run web
