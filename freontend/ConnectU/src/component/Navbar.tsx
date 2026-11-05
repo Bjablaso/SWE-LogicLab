@@ -22,11 +22,6 @@ type Tab = {
 // href must match your file names exactly (capital letters)
 const TABS: Tab[] = [
     {
-        href: "/",
-        label: "Events",
-        icon: (c) => <AntDesign name="calendar" size={24} color={c} />,
-    },
-    {
         href: "/Discover",
         label: "Discover",
         icon: (c) => <AntDesign name="compass" size={24} color={c} />,
