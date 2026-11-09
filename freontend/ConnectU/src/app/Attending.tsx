@@ -128,7 +128,7 @@ export default function Attending() {
     //     isViewable: false,
     //     eventID: 0
     // }
-    const rsvpEvents = state.events.filter(event => event.isRsvpd && !event.isSaved)
+    const rsvpEvents = state.events.filter(event => event.isRsvpd)
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
 
