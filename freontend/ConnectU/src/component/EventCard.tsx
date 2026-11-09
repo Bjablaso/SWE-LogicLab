@@ -9,7 +9,7 @@ interface EventDetailProps {
 }
 export const EventCard = ({event}: EventDetailProps) => {
     //const event = data.recommended[0];
-    const router = useRouter();
+   //const router = useRouter();
 
     return (
 
