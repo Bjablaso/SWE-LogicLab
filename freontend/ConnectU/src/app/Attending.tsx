@@ -6,8 +6,17 @@ import EventDetail from "@/component/EventDetail";
 import {useEventContext} from "@/context/useEventContext";
 import {useFocusEffect} from "expo-router";
 import {useTheme} from "@/hooks/use-theme";
+import {directionIcon, directionLabel, filterBy, nextDirection} from "@/insterface/eventInterface";
+// import {nextDirection, directionLabel, directionIcon} from "@/utils/sortDirection";
 
-const AttendingHeader = () => {
+interface AttendingHeaderProp {
+    filterDirection: filterBy;
+    onToggleDirection: () => void;
+}
+
+// The header no longer owns the sort state. It shows the current direction
+// and tells the parent when it's tapped.
+const AttendingHeader = ({filterDirection, onToggleDirection}: AttendingHeaderProp) => {
     return (
         <View>
             <Text className="text-3xl font-extrabold text-baseFont">Attending</Text>
@@ -21,9 +30,18 @@ const AttendingHeader = () => {
                     <Text className="text-baseFont">Event date</Text>
                     <Feather name="chevron-down" size={18} color="#9E9A90" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}} className="flex-row items-center gap-1 rounded-xl border border-control px-4 py-3">
-                    <Text className="font-bold text-baseFont">Ascending</Text>
-                    <Feather name="arrow-up" size={16} color="#9E9A90" />
+                <TouchableOpacity
+                    onPress={onToggleDirection}
+                    className="flex-row items-center gap-1 rounded-xl border border-control px-4 py-3"
+                >
+                    <Text className="font-bold text-baseFont">
+                        {directionLabel(filterDirection)}
+                    </Text>
+                    <Feather
+                        name={directionIcon(filterDirection)}
+                        size={16}
+                        color="#9E9A90"
+                    />
                 </TouchableOpacity>
             </View>
         </View>
@@ -42,15 +60,9 @@ interface AttendingEventRowProp{
 }
 
 const AttendingEventRow = ({title, eventDate, startTime, location,
-                           isClick, viewEventIDNow, eventID}: AttendingEventRowProp) => {
+                               isClick, viewEventIDNow, eventID}: AttendingEventRowProp) => {
     const {colors} = useTheme();
-    const eventid = eventID
-    const {state, unattendEvent} = useEventContext()
-    const currentEvent = state.events.find(event => event.eventId === eventid)
-    function clikacble(){
-        isClick(true)
-    }
-
+    const {unattendEvent} = useEventContext();
 
     return (
         <View className="gap-3 rounded-2xl border border-border bg-surface p-4">
@@ -75,14 +87,14 @@ const AttendingEventRow = ({title, eventDate, startTime, location,
             {/* bottom: 2 buttons side by side */}
             <View className="flex-row gap-3">
                 <TouchableOpacity onPress={() => {
-                    clikacble();
-                    viewEventIDNow(eventid);
+                    isClick(true);
+                    viewEventIDNow(eventID);
                 }} className="flex-1 items-center rounded-full border border-control py-2.5">
 
                     <Text className="font-bold text-baseFont">View</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => {
-                    unattendEvent(eventid);
+                    unattendEvent(eventID);
                 }} className="flex-1 items-center rounded-full  bg-accent py-2.5">
 
                     <Text className="font-bold text-baseFont"> Cancel RSVP</Text>
@@ -93,49 +105,42 @@ const AttendingEventRow = ({title, eventDate, startTime, location,
 };
 
 export default function Attending() {
-    const {state} = useEventContext();
+    const {state, filterRSVPEventList} = useEventContext();
     const [isViewable, setViewable] = useState(false);
     const [eventID, setEventID] = useState<number>(0);
-    const defualt = {
-        isViewable: false,
-        eventID,
-    }
+    const [filterDirection, setFilterDirection] = useState<filterBy>("None");
 
+    // Reset to defaults every time this tab comes into focus
     useFocusEffect(
-        useCallback(()=>{
-            setViewable(defualt.isViewable);
-            setEventID(defualt.eventID);
-        },[])
-    )
-
+        useCallback(() => {
+            setViewable(false);
+            setEventID(0);
+            setFilterDirection("None");
+        }, [])
+    );
 
     function currentID(id: number) {
         setEventID(id);
     }
-    function viewable( view: boolean ){
+    function viewable(view: boolean) {
         setViewable(view);
     }
-
     function goBack() {
         setViewable(false);
     }
 
-    // const {state} = useEventContext();
-    // const [isViewable, setViewable] = useState(false);
-    // const [eventID, setEventID] = useState<number>(0);
-    //
-    // const defult = {
-    //     isViewable: false,
-    //     eventID: 0
-    // }
-    const rsvpEvents = state.events.filter(event => event.isRsvpd)
+    const rsvpEvents = filterRSVPEventList(filterDirection);
+
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
 
             { !isViewable ?
                 (
                     <View className="flex-1  p-2 bg-background  ">
-                        <AttendingHeader />
+                        <AttendingHeader
+                            filterDirection={filterDirection}
+                            onToggleDirection={() => setFilterDirection(prev => nextDirection(prev))}
+                        />
 
                         <ScrollView className="mt-6 flex-1" contentContainerClassName="gap-3 pb-10">
                             {rsvpEvents.map(event=>(
@@ -150,26 +155,23 @@ export default function Attending() {
                                     eventID={event.eventId}
                                 />
                             ))}
-
                         </ScrollView>
 
                     </View>
                 )
-                 :
+                :
                 (
                     <EventDetail
                         eventStore={state}
                         eventID={eventID}
                         goBack={goBack}/>
                 )
-
             }
-
-
 
         </SafeAreaView>
     );
 }
+
 // <SafeAreaView edges={["top"]} className="flex-1 bg-background">
 //     <ScrollView contentContainerClassName="px-4 pt-4 pb-10">
 //         <AttendingHeader />
