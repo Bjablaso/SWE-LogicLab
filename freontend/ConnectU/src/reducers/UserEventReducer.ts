@@ -127,8 +127,6 @@ export function userEventReducer(
             };
         }
         case "ATTEND": {
-
-            // Find the event
             const targetEvent = state.events.find(
                 event => event.eventId === action.payload.eventId
             );
@@ -143,10 +141,10 @@ export function userEventReducer(
                 return state;
             }
 
-            // Update the selected event
+            // RSVP, and if the event was saved, unsave it
             const updatedEvents = state.events.map(event =>
                 event.eventId === action.payload.eventId
-                    ? { ...event, isRsvpd: true }
+                    ? { ...event, isRsvpd: true, isSaved: false }
                     : event
             );
 
@@ -155,7 +153,6 @@ export function userEventReducer(
                 events: updatedEvents
             };
         }
-
         case "UNATTEND": {
             // Find the event we are looking for
             const targetEvent = state.events.find(
