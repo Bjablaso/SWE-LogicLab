@@ -7,7 +7,7 @@ import {useCallback, useEffect, useState} from "react";
 import bold from "expo-symbols/androidWeights/bold";
 import EventDetail from "@/component/EventDetail";
 import {useFocusEffect} from "expo-router";
-
+import {filterBy} from "@/insterface/eventInterface";
 interface SavedEventRowProp{
     title: string;
     eventDate: string;
@@ -16,6 +16,7 @@ interface SavedEventRowProp{
     isClick: (clicked: boolean)=>void;
     viewEventIDNow: (id: number)=>void;
     eventID: number;
+   // filter: filterSaved;
 }
 
 const SavedEventRow = ({title, eventDate, startTime, location,
@@ -71,14 +72,28 @@ const SavedEventRow = ({title, eventDate, startTime, location,
 
 
 export default function Saved() {
-    const {state} = useEventContext();
+    const {state, filterSavedEventList, filterRSVPEventList, sevedEventList} = useEventContext();
     const [isViewable, setViewable] = useState(false);
     const [eventID, setEventID] = useState<number>(0);
+    const [filterDirection, setFilterDirection] = useState<filterBy>("None");
+    //onst [filterAsceding, setFilterAsceding] = useState<boolean>(false);
+
+    const savedEvent = filterSavedEventList(filterDirection)
+
+    //const savedEvent = state.events.filter(event => event.isSaved && !event.isRsvpd);
+
+
 
     const defult = {
         isViewable: false,
         eventID: 0
     }
+
+    // const defualt ={
+    //     noFilter: state.events.filter(event => event.isSaved && !event.isRsvpd)
+    // }
+    //
+
     useFocusEffect(
         useCallback(() => {
             setViewable(defult.isViewable);
@@ -98,7 +113,29 @@ export default function Saved() {
     }
 
 
-    const savedEvent = state.events.filter(event => event.isSaved && !event.isRsvpd);
+    function directionLabel(dir: filterBy): string {
+        switch (dir) {
+            case "Ascending":  return "Ascending";
+            case "Descending": return "Descending";
+            case "None":       return "Ascending";
+        }
+    }
+
+    function directionIcon(dir: filterBy): "arrow-up" | "arrow-down" | "minus" {
+        switch (dir) {
+            case "Ascending":  return "arrow-up";
+            case "Descending": return "arrow-down";
+            case "None":       return "arrow-up";
+        }
+    }
+     function nextDirection(current: filterBy): filterBy {
+        switch (current) {
+            case "None":       return "Descending";   // first click
+            case "Descending": return "Ascending";    // second click
+            case "Ascending":  return "Descending";   // keeps switching
+        }
+    }
+
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
             {
@@ -114,10 +151,22 @@ export default function Saved() {
                             <Text className="text-baseFont">Event date</Text>
                             <Feather name="chevron-down" size={18} color="#9E9A90" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {}} className="flex-row items-center gap-1 rounded-xl border border-control px-4 py-3">
-                            <Text className="font-bold text-baseFont">Ascending</Text>
-                            <Feather name="arrow-up" size={16} color="#9E9A90" />
+
+                        <TouchableOpacity
+                            onPress={() => setFilterDirection(prev => nextDirection(prev))}
+                            className="flex-row items-center gap-1 rounded-xl border border-control px-4 py-3"
+                        >
+                            <Text className="font-bold text-baseFont">
+                                {directionLabel(filterDirection)}
+                            </Text>
+                            <Feather
+                                name={directionIcon(filterDirection)}
+                                size={16}
+                                color="#9E9A90"
+                            />
                         </TouchableOpacity>
+
+
                     </View>
 
                     {/* only the list scrolls */}
@@ -143,7 +192,6 @@ export default function Saved() {
                             goBack={goBack}/>
                     )
             }
-
 
         </SafeAreaView>
     );
