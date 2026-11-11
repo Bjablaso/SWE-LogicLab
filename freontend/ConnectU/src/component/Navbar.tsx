@@ -53,6 +53,7 @@ export function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const { colors } = useTheme();
+    const fontColor = colors.baseFont
     // OK: this is inside the provider
 
 

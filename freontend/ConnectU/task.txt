@@ -1,0 +1,7 @@
+I’ve added both to the task list for later:
+
+Connect save, unsave, RSVP and cancel to the API. Update locally, call the backend, undo on failure, and also unsave
+on the backend when RSVPing.
+
+Build event search on the frontend. That covers searchResultIds in the store,
+results merged into the cache, the API call, and a SearchResults component on Discover.

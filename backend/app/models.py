@@ -52,6 +52,12 @@ class Event(SQLModel, table=True):
     location: Optional[str] = None
     capacity: Optional[int] = None
     status: str = "active"
+    # PENDING TEAM APPROVAL: needs `updated_at` column + trigger in Supabase.
+    # Enables cursor-based delta sync in student_feed.py.
+    # updated_at: datetime = Field(
+    #     default_factory=lambda: datetime.now(timezone.utc),
+    #     index=True,
+    # )
 
 
 class EventInterest(SQLModel, table=True):
