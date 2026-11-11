@@ -70,7 +70,7 @@ export const userEvent : EventStore = {
    // recommendedIds: [],
     savedEventIds: [],
     attendingEventIds: [],
-    searchResultIds: [],
+    searchResultIds: null,
     recomendedTitle: "Recommended for you",
     uptodateTitle: "Recommended for you"
 }
