@@ -1,34 +1,28 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import  {useTheme} from "@/hooks/use-theme";
+import {View, Text, TouchableOpacity, ScrollView} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {Feather} from "@expo/vector-icons";
+import {useTheme} from "@/hooks/use-theme";
 import {useEventContext} from "@/context/useEventContext";
-import {useCallback, useEffect, useState} from "react";
-import bold from "expo-symbols/androidWeights/bold";
+import {useCallback, useState} from "react";
 import EventDetail from "@/component/EventDetail";
 import {useFocusEffect} from "expo-router";
 import {filterBy} from "@/insterface/eventInterface";
-interface SavedEventRowProp{
+import {ResponsiveGrid} from "@/component/ResponsiveGrid";
+
+interface SavedEventRowProp {
     title: string;
     eventDate: string;
     startTime: string;
     location: string;
-    isClick: (clicked: boolean)=>void;
-    viewEventIDNow: (id: number)=>void;
+    isClick: (clicked: boolean) => void;
+    viewEventIDNow: (id: number) => void;
     eventID: number;
-   // filter: filterSaved;
 }
 
 const SavedEventRow = ({title, eventDate, startTime, location,
                            isClick, viewEventIDNow, eventID}: SavedEventRowProp) => {
     const {colors} = useTheme();
-    const eventid = eventID
-    const {state, attendEvent} = useEventContext()
-    const currentEvent = state.events.find(event => event.eventId === eventid)
-    function clikacble(){
-        isClick(true)
-    }
-
+    const {attendEvent} = useEventContext();
 
     return (
         <View className="gap-3 rounded-2xl border border-border bg-surface p-4">
@@ -38,10 +32,10 @@ const SavedEventRow = ({title, eventDate, startTime, location,
                     <Text className="flex-1 text-base font-bold text-baseFont" numberOfLines={1}>
                         {title}
                     </Text>
-                    <View className="rounded-full bg-accent/30 px-3 py-1"
-                    style={{
-                        backgroundColor: `${colors?.accent}20`,
-                    }}>
+                    <View
+                        className="rounded-full bg-accent/30 px-3 py-1"
+                        style={{backgroundColor: `${colors?.accent}20`}}
+                    >
                         <Text className="text-xs font-bold text-accent ">RSVP’d</Text>
                     </View>
                 </View>
@@ -52,17 +46,19 @@ const SavedEventRow = ({title, eventDate, startTime, location,
 
             {/* bottom: 2 buttons side by side */}
             <View className="flex-row gap-3">
-                <TouchableOpacity onPress={() => {
-                    clikacble();
-                    viewEventIDNow(eventid);
-                }} className="flex-1 items-center rounded-full border border-control py-2.5">
-
+                <TouchableOpacity
+                    onPress={() => {
+                        isClick(true);
+                        viewEventIDNow(eventID);
+                    }}
+                    className="flex-1 items-center rounded-full border border-control py-2.5"
+                >
                     <Text className="font-bold text-baseFont">View</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                   attendEvent(eventid);
-                }} className="flex-1 items-center rounded-full  bg-accent py-2.5">
-
+                <TouchableOpacity
+                    onPress={() => attendEvent(eventID)}
+                    className="flex-1 items-center rounded-full bg-accent py-2.5"
+                >
                     <Text className="font-bold text-baseFont"> RSVP</Text>
                 </TouchableOpacity>
             </View>
@@ -71,85 +67,74 @@ const SavedEventRow = ({title, eventDate, startTime, location,
 };
 
 
+function directionLabel(dir: filterBy): string {
+    switch (dir) {
+        case "Ascending":  return "Ascending";
+        case "Descending": return "Descending";
+        case "None":       return "Ascending";
+    }
+}
+
+function directionIcon(dir: filterBy): "arrow-up" | "arrow-down" | "minus" {
+    switch (dir) {
+        case "Ascending":  return "arrow-up";
+        case "Descending": return "arrow-down";
+        case "None":       return "arrow-up";
+    }
+}
+
+function nextDirection(current: filterBy): filterBy {
+    switch (current) {
+        case "None":       return "Descending";   // first click
+        case "Descending": return "Ascending";    // second click
+        case "Ascending":  return "Descending";   // keeps switching
+    }
+}
+
+
 export default function Saved() {
-    const {state, filterSavedEventList, filterRSVPEventList, sevedEventList} = useEventContext();
+    const {state, filterSavedEventList} = useEventContext();
     const [isViewable, setViewable] = useState(false);
     const [eventID, setEventID] = useState<number>(0);
     const [filterDirection, setFilterDirection] = useState<filterBy>("None");
-    //onst [filterAsceding, setFilterAsceding] = useState<boolean>(false);
 
-    const savedEvent = filterSavedEventList(filterDirection)
-
-    //const savedEvent = state.events.filter(event => event.isSaved && !event.isRsvpd);
-
-
-
-    const defult = {
-        isViewable: false,
-        eventID: 0
-    }
-
-    // const defualt ={
-    //     noFilter: state.events.filter(event => event.isSaved && !event.isRsvpd)
-    // }
-    //
+    const savedEvent = filterSavedEventList(filterDirection);
 
     useFocusEffect(
         useCallback(() => {
-            setViewable(defult.isViewable);
-            setEventID(defult.eventID)
+            setViewable(false);
+            setEventID(0);
         }, [])
     );
 
     function viewDetials(view: boolean) {
         setViewable(view);
     }
+
     function viewDetialID(num: number) {
-       setEventID(num);
+        setEventID(num);
     }
 
     function goBack() {
         setViewable(false);
     }
 
-
-    function directionLabel(dir: filterBy): string {
-        switch (dir) {
-            case "Ascending":  return "Ascending";
-            case "Descending": return "Descending";
-            case "None":       return "Ascending";
-        }
-    }
-
-    function directionIcon(dir: filterBy): "arrow-up" | "arrow-down" | "minus" {
-        switch (dir) {
-            case "Ascending":  return "arrow-up";
-            case "Descending": return "arrow-down";
-            case "None":       return "arrow-up";
-        }
-    }
-     function nextDirection(current: filterBy): filterBy {
-        switch (current) {
-            case "None":       return "Descending";   // first click
-            case "Descending": return "Ascending";    // second click
-            case "Ascending":  return "Descending";   // keeps switching
-        }
-    }
-
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
-            {
-                !isViewable ? (
-                    <View className="flex-1  p-2 bg-background  ">
+            {!isViewable ? (
+                <View className="flex-1 p-2 bg-background">
                     {/* title */}
                     <Text className="text-3xl font-extrabold text-baseFont">Saved events</Text>
 
                     {/* sort */}
                     <Text className="mt-5 text-xs font-bold text-muted">Sort by</Text>
                     <View className="mt-2 flex-row gap-3">
-                        <TouchableOpacity onPress={() => {}} className="flex-1 flex-row items-center justify-between rounded-xl border border-control px-4 py-3">
+                        <TouchableOpacity
+                            onPress={() => {}}
+                            className="flex-1 flex-row items-center justify-between rounded-xl border border-control px-4 py-3"
+                        >
                             <Text className="text-baseFont">Event date</Text>
-                            <Feather name="chevron-down" size={18} color="#9E9A90" />
+                            <Feather name="chevron-down" size={18} color="#9E9A90"/>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -159,40 +144,258 @@ export default function Saved() {
                             <Text className="font-bold text-baseFont">
                                 {directionLabel(filterDirection)}
                             </Text>
-                            <Feather
-                                name={directionIcon(filterDirection)}
-                                size={16}
-                                color="#9E9A90"
-                            />
+                            <Feather name={directionIcon(filterDirection)} size={16} color="#9E9A90"/>
                         </TouchableOpacity>
-
-
                     </View>
 
                     {/* only the list scrolls */}
-                    <ScrollView className="mt-6 flex-1" contentContainerClassName="gap-3 pb-10">
-                        {savedEvent.map(event => (
-                            <SavedEventRow
-                                key={event.eventId}
-                                title={event.title}
-                                eventDate={event.eventDate}
-                                startTime={event.startTime}
-                                location={event.location}
-                                isClick={viewDetials}
-                                viewEventIDNow={viewDetialID}
-                                eventID={event.eventId}
-                            />
-                        ))}
-                    </ScrollView>
-                </View>) :
-                    (
-                        <EventDetail
-                            eventStore={state}
-                            eventID={eventID}
-                            goBack={goBack}/>
-                    )
-            }
+                    <ScrollView className="mt-6 flex-1" contentContainerClassName="pb-10">
+                        {/*<ResponsiveGrid*/}
+                        {/*    items={savedEvent}*/}
+                        {/*    keyExtractor={event => event.eventId}*/}
+                        {/*    minItemWidth={300}*/}
+                        {/*    gap={12}*/}
+                        {/*    renderItem={event => (*/}
+                        {/*        <SavedEventRow*/}
+                        {/*            title={event.title}*/}
+                        {/*            eventDate={event.eventDate}*/}
+                        {/*            startTime={event.startTime}*/}
+                        {/*            location={event.location}*/}
+                        {/*            isClick={viewDetials}*/}
+                        {/*            viewEventIDNow={viewDetialID}*/}
+                        {/*            eventID={event.eventId}*/}
+                        {/*        />*/}
+                        {/*    )}*/}
+                        {/*/>*/}
 
+                        <ResponsiveGrid
+                            items={savedEvent}          // rsvpEvents in Attending
+                            keyExtractor={event => event.eventId}
+                            minItemWidth={300}
+                            maxColumns={2}
+                            gap={12}
+                            renderItem={event => (
+                                <SavedEventRow
+                                    title={event.title}
+                                    eventDate={event.eventDate}
+                                    startTime={event.startTime}
+                                    location={event.location}
+                                    isClick={viewDetials}
+                                    viewEventIDNow={viewDetialID}
+                                    eventID={event.eventId}
+                                />
+                            )}
+                        />
+                    </ScrollView>
+                </View>
+            ) : (
+                <EventDetail
+                    eventStore={state}
+                    eventID={eventID}
+                    goBack={goBack}
+                />
+            )}
         </SafeAreaView>
     );
 }
+
+// import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+// import { SafeAreaView } from "react-native-safe-area-context";
+// import { Feather } from "@expo/vector-icons";
+// import  {useTheme} from "@/hooks/use-theme";
+// import {useEventContext} from "@/context/useEventContext";
+// import {useCallback, useEffect, useState} from "react";
+// import bold from "expo-symbols/androidWeights/bold";
+// import EventDetail from "@/component/EventDetail";
+// import {useFocusEffect} from "expo-router";
+// import {filterBy} from "@/insterface/eventInterface";
+//
+//
+// interface SavedEventRowProp{
+//     title: string;
+//     eventDate: string;
+//     startTime: string;
+//     location: string;
+//     isClick: (clicked: boolean)=>void;
+//     viewEventIDNow: (id: number)=>void;
+//     eventID: number;
+//    // filter: filterSaved;
+// }
+//
+// const SavedEventRow = ({title, eventDate, startTime, location,
+//                            isClick, viewEventIDNow, eventID}: SavedEventRowProp) => {
+//     const {colors} = useTheme();
+//     const eventid = eventID
+//     const {state, attendEvent} = useEventContext()
+//     const currentEvent = state.events.find(event => event.eventId === eventid)
+//     function clikacble(){
+//         isClick(true)
+//     }
+//
+//
+//     return (
+//         <View className="gap-3 rounded-2xl border border-border bg-surface p-4">
+//             {/* top: 2 rows */}
+//             <View className="gap-1">
+//                 <View className="flex-row items-center justify-between gap-2">
+//                     <Text className="flex-1 text-base font-bold text-baseFont" numberOfLines={1}>
+//                         {title}
+//                     </Text>
+//                     <View className="rounded-full bg-accent/30 px-3 py-1"
+//                     style={{
+//                         backgroundColor: `${colors?.accent}20`,
+//                     }}>
+//                         <Text className="text-xs font-bold text-accent ">RSVP’d</Text>
+//                     </View>
+//                 </View>
+//                 <Text className="text-sm text-muted" numberOfLines={1}>
+//                     {eventDate} · {startTime} · {location}
+//                 </Text>
+//             </View>
+//
+//             {/* bottom: 2 buttons side by side */}
+//             <View className="flex-row gap-3">
+//                 <TouchableOpacity onPress={() => {
+//                     clikacble();
+//                     viewEventIDNow(eventid);
+//                 }} className="flex-1 items-center rounded-full border border-control py-2.5">
+//
+//                     <Text className="font-bold text-baseFont">View</Text>
+//                 </TouchableOpacity>
+//                 <TouchableOpacity onPress={() => {
+//                    attendEvent(eventid);
+//                 }} className="flex-1 items-center rounded-full  bg-accent py-2.5">
+//
+//                     <Text className="font-bold text-baseFont"> RSVP</Text>
+//                 </TouchableOpacity>
+//             </View>
+//         </View>
+//     );
+// };
+//
+//
+// export default function Saved() {
+//     const {state, filterSavedEventList, filterRSVPEventList, sevedEventList} = useEventContext();
+//     const [isViewable, setViewable] = useState(false);
+//     const [eventID, setEventID] = useState<number>(0);
+//     const [filterDirection, setFilterDirection] = useState<filterBy>("None");
+//     //onst [filterAsceding, setFilterAsceding] = useState<boolean>(false);
+//
+//     const savedEvent = filterSavedEventList(filterDirection)
+//
+//     //const savedEvent = state.events.filter(event => event.isSaved && !event.isRsvpd);
+//
+//
+//
+//     const defult = {
+//         isViewable: false,
+//         eventID: 0
+//     }
+//
+//     // const defualt ={
+//     //     noFilter: state.events.filter(event => event.isSaved && !event.isRsvpd)
+//     // }
+//     //
+//
+//     useFocusEffect(
+//         useCallback(() => {
+//             setViewable(defult.isViewable);
+//             setEventID(defult.eventID)
+//         }, [])
+//     );
+//
+//     function viewDetials(view: boolean) {
+//         setViewable(view);
+//     }
+//     function viewDetialID(num: number) {
+//        setEventID(num);
+//     }
+//
+//     function goBack() {
+//         setViewable(false);
+//     }
+//
+//
+//     function directionLabel(dir: filterBy): string {
+//         switch (dir) {
+//             case "Ascending":  return "Ascending";
+//             case "Descending": return "Descending";
+//             case "None":       return "Ascending";
+//         }
+//     }
+//
+//     function directionIcon(dir: filterBy): "arrow-up" | "arrow-down" | "minus" {
+//         switch (dir) {
+//             case "Ascending":  return "arrow-up";
+//             case "Descending": return "arrow-down";
+//             case "None":       return "arrow-up";
+//         }
+//     }
+//      function nextDirection(current: filterBy): filterBy {
+//         switch (current) {
+//             case "None":       return "Descending";   // first click
+//             case "Descending": return "Ascending";    // second click
+//             case "Ascending":  return "Descending";   // keeps switching
+//         }
+//     }
+//
+//     return (
+//         <SafeAreaView edges={["top"]} className="flex-1 bg-background px-4 pt-4">
+//             {
+//                 !isViewable ? (
+//                     <View className="flex-1  p-2 bg-background  ">
+//                     {/* title */}
+//                     <Text className="text-3xl font-extrabold text-baseFont">Saved events</Text>
+//
+//                     {/* sort */}
+//                     <Text className="mt-5 text-xs font-bold text-muted">Sort by</Text>
+//                     <View className="mt-2 flex-row gap-3">
+//                         <TouchableOpacity onPress={() => {}} className="flex-1 flex-row items-center justify-between rounded-xl border border-control px-4 py-3">
+//                             <Text className="text-baseFont">Event date</Text>
+//                             <Feather name="chevron-down" size={18} color="#9E9A90" />
+//                         </TouchableOpacity>
+//
+//                         <TouchableOpacity
+//                             onPress={() => setFilterDirection(prev => nextDirection(prev))}
+//                             className="flex-row items-center gap-1 rounded-xl border border-control px-4 py-3"
+//                         >
+//                             <Text className="font-bold text-baseFont">
+//                                 {directionLabel(filterDirection)}
+//                             </Text>
+//                             <Feather
+//                                 name={directionIcon(filterDirection)}
+//                                 size={16}
+//                                 color="#9E9A90"
+//                             />
+//                         </TouchableOpacity>
+//
+//
+//                     </View>
+//
+//                     {/* only the list scrolls */}
+//                     <ScrollView className="mt-6 flex-1" contentContainerClassName="gap-3 pb-10">
+//                         {savedEvent.map(event => (
+//                             <SavedEventRow
+//                                 key={event.eventId}
+//                                 title={event.title}
+//                                 eventDate={event.eventDate}
+//                                 startTime={event.startTime}
+//                                 location={event.location}
+//                                 isClick={viewDetials}
+//                                 viewEventIDNow={viewDetialID}
+//                                 eventID={event.eventId}
+//                             />
+//                         ))}
+//                     </ScrollView>
+//                 </View>) :
+//                     (
+//                         <EventDetail
+//                             eventStore={state}
+//                             eventID={eventID}
+//                             goBack={goBack}/>
+//                     )
+//             }
+//
+//         </SafeAreaView>
+//     );
+// }
