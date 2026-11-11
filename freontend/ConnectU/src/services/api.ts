@@ -110,23 +110,31 @@ export async function getStudentFeed(
     studentId: number,
     since?: string,
 ): Promise<StudentFeedSyncResponse> {
+    console.log("API_URL =", API_URL);
     const query = since ? `?since=${encodeURIComponent(since)}` : "";
     return request<StudentFeedSyncResponse>(`/api/students/${studentId}/feed${query}`);
 }
 
+// export async function searchStudentEvents(
+//     studentId: number,
+//     filters: EventSearchFilters,
+// ): Promise<EventSearchResponse> {
+//     const params = new URLSearchParams();
+//     if (filters.q) params.append("q", filters.q);
+//     if (filters.category) params.append("category", filters.category);
+//     if (filters.location) params.append("location", filters.location);
+//     if (filters.startAfter) params.append("start_after", filters.startAfter.toISOString());
+//     if (filters.startBefore) params.append("start_before", filters.startBefore.toISOString());
+//
+//     const query = params.toString();
+//     return request<EventSearchResponse>(
+//         `/api/students/${studentId}/events/search${query ? `?${query}` : ""}`,
+//     );
+// }
 export async function searchStudentEvents(
     studentId: number,
     filters: EventSearchFilters,
 ): Promise<EventSearchResponse> {
-    const params = new URLSearchParams();
-    if (filters.q) params.append("q", filters.q);
-    if (filters.category) params.append("category", filters.category);
-    if (filters.location) params.append("location", filters.location);
-    if (filters.startAfter) params.append("start_after", filters.startAfter.toISOString());
-    if (filters.startBefore) params.append("start_before", filters.startBefore.toISOString());
-
-    const query = params.toString();
-    return request<EventSearchResponse>(
-        `/api/students/${studentId}/events/search${query ? `?${query}` : ""}`,
-    );
+    const events = await getEvents(filters.q, undefined, studentId);   // GET /api/events?search=...&student_id=...
+    return { events, searched_at: new Date().toISOString() };          // wrap to the shape the context expects
 }
