@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, ScrollView} from "react-native";
+import {View, Text, TouchableOpacity, ScrollView, useWindowDimensions} from "react-native";
 import {Feather} from "@expo/vector-icons";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useCallback, useState} from "react";
@@ -7,7 +7,8 @@ import {useEventContext} from "@/context/useEventContext";
 import {useFocusEffect} from "expo-router";
 import {useTheme} from "@/hooks/use-theme";
 import {directionIcon, directionLabel, filterBy, nextDirection} from "@/insterface/eventInterface";
-import {ResponsiveGrid} from "@/component/ResponsiveGrid";
+
+const WIDE_BREAKPOINT = 768;   // at or above this width, buttons sit on the right
 
 interface AttendingHeaderProp {
     filterDirection: filterBy;
@@ -56,19 +57,24 @@ interface AttendingEventRowProp {
     isClick: (clicked: boolean) => void;
     viewEventIDNow: (id: number) => void;
     eventID: number;
+    wide: boolean;
 }
 
 const AttendingEventRow = ({title, eventDate, startTime, location,
-                               isClick, viewEventIDNow, eventID}: AttendingEventRowProp) => {
+                               isClick, viewEventIDNow, eventID, wide}: AttendingEventRowProp) => {
     const {colors} = useTheme();
     const {unattendEvent} = useEventContext();
 
     return (
-        <View className="gap-3 rounded-2xl border border-border bg-surface p-4">
-            {/* top: 2 rows */}
-            <View className="gap-1">
-                <View className="flex-row items-center justify-between gap-2">
-                    <Text className="flex-1 text-base font-bold text-baseFont" numberOfLines={1}>
+        <View
+            className={`rounded-3xl border border-border bg-surface px-6 py-5 ${
+                wide ? "flex-row items-center justify-between gap-6" : ""
+            }`}
+        >
+            {/* left: title + badge, then date · time · place */}
+            <View className={`gap-1 ${wide ? "flex-1" : ""}`}>
+                <View className="flex-row items-center gap-2">
+                    <Text className="shrink text-lg font-bold text-baseFont" numberOfLines={1}>
                         {title}
                     </Text>
                     <View
@@ -83,20 +89,20 @@ const AttendingEventRow = ({title, eventDate, startTime, location,
                 </Text>
             </View>
 
-            {/* bottom: 2 buttons side by side */}
-            <View className="flex-row gap-3">
+            {/* right (web) or below (mobile): View + Cancel RSVP */}
+            <View className={`flex-row gap-3 ${wide ? "" : "mt-4"}`}>
                 <TouchableOpacity
                     onPress={() => {
                         isClick(true);
                         viewEventIDNow(eventID);
                     }}
-                    className="flex-1 items-center rounded-full border border-control py-2.5"
+                    className={`items-center justify-center rounded-full border border-control px-6 py-3 ${wide ? "" : "flex-1"}`}
                 >
                     <Text className="font-bold text-baseFont">View</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => unattendEvent(eventID)}
-                    className="flex-1 items-center rounded-full bg-accent py-2.5"
+                    className={`items-center justify-center rounded-full bg-accent px-6 py-3 ${wide ? "" : "flex-1"}`}
                 >
                     <Text className="font-bold text-baseFont"> Cancel RSVP</Text>
                 </TouchableOpacity>
@@ -106,20 +112,25 @@ const AttendingEventRow = ({title, eventDate, startTime, location,
 };
 
 export default function Attending() {
-    const {state, filterRSVPEventList} = useEventContext();
+    const {state, filterRSVPEventList, refreshMyEvents, actionError, clearActionError} = useEventContext();
+
+    const {width} = useWindowDimensions();
+    const wide = width >= WIDE_BREAKPOINT;
+
     const [isViewable, setViewable] = useState(false);
     const [eventID, setEventID] = useState<number>(0);
     const [filterDirection, setFilterDirection] = useState<filterBy>("None");
 
-    // Reset to defaults every time this tab comes into focus
+    // Every time this tab comes into focus: reset the view, and pull the latest
+    // RSVPs from the backend (picks up changes made on another device)
     useFocusEffect(
         useCallback(() => {
             setViewable(false);
             setEventID(0);
             setFilterDirection("None");
+            refreshMyEvents();
         }, [])
     );
-
     function currentID(id: number) {
         setEventID(id);
     }
@@ -143,26 +154,31 @@ export default function Attending() {
                         onToggleDirection={() => setFilterDirection(prev => nextDirection(prev))}
                     />
 
-                    {/* only the list scrolls */}
-                    <ScrollView className="mt-6 flex-1" contentContainerClassName="pb-10">
-                        <ResponsiveGrid
-                            items={rsvpEvents}          // rsvpEvents in Attending
-                            keyExtractor={event => event.eventId}
-                            minItemWidth={300}
-                            maxColumns={2}
-                            gap={12}
-                            renderItem={event => (
-                                <AttendingEventRow
-                                    title={event.title}
-                                    eventDate={event.eventDate}
-                                    startTime={event.startTime}
-                                    location={event.location}
-                                    isClick={viewable}
-                                    viewEventIDNow={currentID}
-                                    eventID={event.eventId}
-                                />
-                            )}
-                        />
+                    {/* Error from a failed action (e.g. cancel RSVP); tap to dismiss */}
+                    {/*{actionError && (*/}
+                    {/*    <TouchableOpacity*/}
+                    {/*        onPress={clearActionError}*/}
+                    {/*        className="mt-4 flex-row items-center justify-between rounded-2xl bg-warningBg px-4 py-3"*/}
+                    {/*    >*/}
+                    {/*        <Text className="flex-1 font-sans text-body text-warningText">{actionError}</Text>*/}
+                    {/*        <Feather name="x" size={16} color={colors.warningText}/>*/}
+                    {/*    </TouchableOpacity>*/}
+                    {/*)}*/}
+                    {/* only the list scrolls: one row per event */}
+                    <ScrollView className="mt-6 flex-1" contentContainerClassName="gap-4 pb-10">
+                        {rsvpEvents.map(event => (
+                            <AttendingEventRow
+                                key={event.eventId}
+                                title={event.title}
+                                eventDate={event.eventDate}
+                                startTime={event.startTime}
+                                location={event.location}
+                                isClick={viewable}
+                                viewEventIDNow={currentID}
+                                eventID={event.eventId}
+                                wide={wide}
+                            />
+                        ))}
                     </ScrollView>
                 </View>
             ) : (
