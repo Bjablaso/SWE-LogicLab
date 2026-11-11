@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import {useRef, useState} from "react";
 import {
     View,
     Text,
@@ -6,13 +6,14 @@ import {
     PanResponder,
     ScrollView,
     Animated,
+    Platform,
     NativeSyntheticEvent,
     NativeScrollEvent,
 } from "react-native";
-import { FontAwesome, Feather } from "@expo/vector-icons";
+import {FontAwesome, Feather} from "@expo/vector-icons";
 
-import { EventStore } from "@/insterface/eventInterface";
-import { useEventContext } from "@/context/useEventContext";
+import {EventStore} from "@/insterface/eventInterface";
+import {useEventContext} from "@/context/useEventContext";
 
 interface EventDetailProps {
     eventStore: EventStore;
@@ -21,11 +22,12 @@ interface EventDetailProps {
 }
 
 const BAR_HEIGHT = 96;
+const IS_WEB = Platform.OS === "web";
 
-export default function EventDetail({ eventID, goBack, eventStore }: EventDetailProps) {
+export default function EventDetail({eventID, goBack, eventStore}: EventDetailProps) {
     const state = eventStore;
 
-    const { attendEvent, unattendEvent, saveEvent, unsaveEvent } = useEventContext();
+    const {attendEvent, unattendEvent, saveEvent, unsaveEvent} = useEventContext();
 
     const event = state.events.find(e => e.eventId === eventID);
 
@@ -36,7 +38,7 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
     const [rsvpd, setRsvpd] = useState(event?.isRsvpd ?? false);
 
     /*
-     * Bottom RSVP bar: hides when scrolling down, shows when scrolling up or at the top
+     * Bottom bar: hides when scrolling down, shows when scrolling up or at the top
      */
     const barOffset = useRef(new Animated.Value(0)).current;
     const lastY = useRef(0);
@@ -48,7 +50,7 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
         Animated.timing(barOffset, {
             toValue: show ? 0 : BAR_HEIGHT + 20,
             duration: 200,
-            useNativeDriver: true,
+            useNativeDriver: !IS_WEB,          // web has no native driver
         }).start();
     };
 
@@ -61,7 +63,7 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
     };
 
     /*
-     * Swipe LEFT → RIGHT to go back
+     * Mobile only: swipe LEFT → RIGHT to go back
      */
     const panResponder = useRef(
         PanResponder.create({
@@ -84,7 +86,7 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
      * Event information
      */
     const attending = event.capacity - event.spotsLeft;
-    const format = { in_person: "In person", online: "Online", hybrid: "Hybrid" }[event.format];
+    const format = {in_person: "In person", online: "Online", hybrid: "Hybrid"}[event.format];
 
     const toggleSave = () => {
         if (saved) unsaveEvent(eventID);
@@ -96,22 +98,42 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
         if (rsvpd) unattendEvent(eventID);
         else attendEvent(eventID);
         setRsvpd(!rsvpd);
-        goBack()
+        goBack();
     };
 
-    const Info = ({ label, value }: { label: string; value: string }) => (
+    const Info = ({label, value}: { label: string; value: string }) => (
         <View className="mb-4 w-1/2 pr-3">
             <Text className="text-[11px] font-bold uppercase tracking-widest text-muted">{label}</Text>
             <Text className="mt-1 text-[15px] text-baseFont">{value}</Text>
         </View>
     );
 
+    /*
+     * RSVP button: full width on mobile, sized to content on web
+     */
+    const RsvpButton = (
+        <TouchableOpacity
+            onPress={toggleRsvp}
+            className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
+                IS_WEB ? "px-8" : ""
+            } ${rsvpd ? "border border-accent" : "bg-accent"}`}
+        >
+            <Feather name={rsvpd ? "check" : "calendar"} size={18} color={rsvpd ? "#FFC800" : "#121212"}/>
+            <Text className={`text-base font-bold ${rsvpd ? "text-accent" : "text-black"}`}>
+                {rsvpd ? "Going · tap to cancel" : "RSVP"}
+            </Text>
+        </TouchableOpacity>
+    );
+
     return (
-        <View className="flex-1 bg-background" {...panResponder.panHandlers}>
+        <View
+            className="flex-1 bg-background"
+            {...(IS_WEB ? {} : panResponder.panHandlers)}   // swipe back on mobile only
+        >
             <ScrollView
                 onScroll={onScroll}
                 scrollEventThrottle={16}
-                contentContainerStyle={{ paddingBottom: BAR_HEIGHT + 24 }}
+                contentContainerStyle={{paddingBottom: BAR_HEIGHT + 24}}
                 contentContainerClassName="px-5 pt-4"
             >
                 {/* HEADER: category + heart */}
@@ -145,25 +167,24 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
                     </View>
                 </View>
 
-                <View className="my-5 h-px bg-border" />
+                <View className="my-5 h-px bg-border"/>
 
                 {/* DETAILS GRID */}
                 <View className="flex-row flex-wrap">
-                    <Info label="Date & time" value={`${event.eventDate} · ${event.startTime}–${event.endTime}`} />
-                    <Info label="Format" value={format ?? event.format} />
-                    <Info label="Venue" value={event.location} />
-                    <Info label="Availability" value={`${event.spotsLeft} of ${event.capacity} spots open`} />
+                    <Info label="Date & time" value={`${event.eventDate} · ${event.startTime}–${event.endTime}`}/>
+                    <Info label="Format" value={format ?? event.format}/>
+                    <Info label="Venue" value={event.location}/>
+                    <Info label="Availability" value={`${event.capacity - event.spotsLeft} of ${event.capacity} spots taken`}/>
                 </View>
 
-                <View className="h-px bg-border" />
+                <View className="h-px bg-border"/>
 
                 {/* ABOUT */}
                 <Text className="mt-5 text-[11px] font-bold uppercase tracking-widest text-muted">About</Text>
                 <Text className="mt-1 text-[15px] leading-6 text-baseFont">{event.description}</Text>
             </ScrollView>
 
-            {/* BOTTOM RSVP BAR (slides away on scroll down) */}
-            {/* BOTTOM RSVP BAR (slides away on scroll down) */}
+            {/* BOTTOM BAR (slides away on scroll down) */}
             <Animated.View
                 style={{
                     position: "absolute",
@@ -175,21 +196,29 @@ export default function EventDetail({ eventID, goBack, eventStore }: EventDetail
                     paddingHorizontal: 20,
                     zIndex: 10,
                     elevation: 10,
-                    transform: [{ translateY: barOffset }],
+                    transform: [{translateY: barOffset}],
                 }}
             >
-                <View className="absolute inset-0 border-t border-border bg-background" />
-                <TouchableOpacity
-                    onPress={toggleRsvp}
-                    className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
-                        rsvpd ? "border border-accent" : "bg-accent"
-                    }`}
-                >
-                    <Feather name={rsvpd ? "check" : "calendar"} size={18} color={rsvpd ? "#FFC800" : "#121212"} />
-                    <Text className={`text-base font-bold ${rsvpd ? "text-accent" : "text-black"}`}>
-                        {rsvpd ? "Going · tap to cancel" : "RSVP"}
-                    </Text>
-                </TouchableOpacity>
+                <View className="absolute inset-0 border-t border-border bg-background"/>
+
+                {IS_WEB ? (
+                    /* Web: Back on the left, RSVP on the right, each sized to content */
+                    <View className="flex-row items-center justify-between">
+                        <TouchableOpacity
+                            onPress={goBack}
+                            accessibilityLabel="Back to events"
+                            className="flex-row items-center gap-2 rounded-full border border-control px-6 py-4"
+                        >
+                            <Feather name="arrow-left" size={18} color="#9E9A90"/>
+                            <Text className="text-base font-bold text-baseFont">Back</Text>
+                        </TouchableOpacity>
+
+                        {RsvpButton}
+                    </View>
+                ) : (
+                    /* Mobile: RSVP takes the full width; swipe right to go back */
+                    RsvpButton
+                )}
             </Animated.View>
         </View>
     );
