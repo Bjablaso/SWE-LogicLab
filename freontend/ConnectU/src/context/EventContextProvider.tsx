@@ -31,6 +31,9 @@ export const EventContextProvider = ({children}: EventContextProps) => {
         inFlightRef.current = true;
         try {
             const feed = await getStudentFeed(STUDENT_ID, syncTokenRef.current);
+
+            console.log(feed);
+
             dispatch({type: "SYNC_FEED", payload: toFeedPayload(feed)});
             syncTokenRef.current = feed.sync_token;     // only after a successful merge
             lastSyncRef.current = Date.now();
