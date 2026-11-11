@@ -1,4 +1,4 @@
-import {ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {ActivityIndicator, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
 import {useState} from "react";
 import {Feather} from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -10,6 +10,50 @@ import {TitleCard} from "@/component/TitleCard";
 import {Event, EventStore} from "@/insterface/eventInterface";
 import {useTheme} from "@/hooks/use-theme";
 
+
+
+const MIN_CARD_WIDTH = 260;   // smallest a card may get on web; lower = more columns
+const GRID_GAP = 16;
+
+interface EventGridProps {
+    events: Event[];
+    onSelectEvent: (eventId: number) => void;
+}
+
+const EventGrid = ({events, onSelectEvent}: EventGridProps) => {
+    const [width, setWidth] = useState(0);
+    const isWeb = Platform.OS === "web";
+
+    // How many MIN_CARD_WIDTH cards fit in the space we have (web only)
+    const fits = isWeb && width > 0
+        ? Math.max(1, Math.floor((width + GRID_GAP) / (MIN_CARD_WIDTH + GRID_GAP)))
+        : 1;
+
+    // Never more columns than events, so a few cards stretch to fill the row evenly
+    const columns = Math.max(1, Math.min(fits, events.length));
+
+    // Split the space evenly; floor avoids rounding pushing the last card to a new row
+    const cardWidth = columns === 1
+        ? "100%"
+        : Math.floor((width - GRID_GAP * (columns - 1)) / columns);
+
+    return (
+        <View
+            onLayout={e => setWidth(e.nativeEvent.layout.width)}
+            style={{flexDirection: "row", flexWrap: "wrap", gap: GRID_GAP}}
+        >
+            {events.map(event => (
+                <TouchableOpacity
+                    key={event.eventId}
+                    style={{width: cardWidth}}
+                    onPress={() => onSelectEvent(event.eventId)}
+                >
+                    <EventCard event={event}/>
+                </TouchableOpacity>
+            ))}
+        </View>
+    );
+};
 
 // ---------------------------------------------------------------- Search bar
 
@@ -136,18 +180,20 @@ const UserFeed = ({recommendedEvents, upcomingEvents, onSelectEvent}: UserFeedPr
                 <TitleCard/>
 
                 <DiscoverSectionHeader text="Recommended for you" textSize="xxl"/>
-                {recommendedEvents.map(event => (
-                    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>
-                        <EventCard event={event}/>
-                    </TouchableOpacity>
-                ))}
+                <EventGrid events={recommendedEvents} onSelectEvent={onSelectEvent}/>
+                {/*{recommendedEvents.map(event => (*/}
+                {/*    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>*/}
+                {/*        <EventCard event={event}/>*/}
+                {/*    </TouchableOpacity>*/}
+                {/*))}*/}
 
                 <DiscoverSectionHeader text="Upcoming events" textSize="xxl"/>
-                {upcomingEvents.map(event => (
-                    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>
-                        <EventCard event={event}/>
-                    </TouchableOpacity>
-                ))}
+                <EventGrid events={upcomingEvents} onSelectEvent={onSelectEvent}/>
+                {/*{upcomingEvents.map(event => (*/}
+                {/*    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>*/}
+                {/*        <EventCard event={event}/>*/}
+                {/*    </TouchableOpacity>*/}
+                {/*))}*/}
             </ScrollView>
         </View>
     );
@@ -206,11 +252,12 @@ const SearchResults = ({results, isSearching, error, query, onSelectEvent}: Sear
                 {/*    text={`${results.length} ${results.length === 1 ? "result" : "results"}${query ? ` for "${query}"` : ""}`}*/}
                 {/*    textSize="xxl"*/}
                 {/*/>*/}
-                {results.map(event => (
-                    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>
-                        <EventCard event={event}/>
-                    </TouchableOpacity>
-                ))}
+                <EventGrid events={results} onSelectEvent={onSelectEvent}/>
+                {/*{results.map(event => (*/}
+                {/*    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>*/}
+                {/*        <EventCard event={event}/>*/}
+                {/*    </TouchableOpacity>*/}
+                {/*))}*/}
             </ScrollView>
         </View>
     );
