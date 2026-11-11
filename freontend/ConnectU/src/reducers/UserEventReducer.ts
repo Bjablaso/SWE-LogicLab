@@ -233,6 +233,24 @@ export function userEventReducer(
             return { ...state, searchResultIds: null };
         }
 
+        case "UPSERT_EVENT": {
+            const incoming = action.payload.event;
+            const id = incoming.eventId;
+            const exists = state.events.some(e => e.eventId === id);
+
+            const events = exists
+                // replace, but keep the cached isRecommended (only the feed ranks)
+                ? state.events.map(e => (e.eventId === id ? {...incoming, isRecommended: e.isRecommended} : e))
+                : [...state.events, incoming];
+
+            return {
+                ...state,
+                events,
+                savedEventIds: incoming.isSaved ? addId(state.savedEventIds, id) : removeId(state.savedEventIds, id),
+                attendingEventIds: incoming.isRsvpd ? addId(state.attendingEventIds, id) : removeId(state.attendingEventIds, id),
+            };
+        }
+
         default:
             return state;
     }
