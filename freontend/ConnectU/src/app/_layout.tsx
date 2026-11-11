@@ -12,6 +12,7 @@ import {AppThemeProvider} from "@constants/app-theme-provider";
 import {EventContextProvider} from "@/context/EventContextProvider";
 import {useTheme} from "@/hooks/use-theme";
 import {Easing} from "react-native-reanimated";
+import {Glow} from "@/component/Glow";
 
 
 function WebDrawerOverlay({
@@ -160,8 +161,6 @@ function ThemedTabs() {
                         width: RAIL_WIDTH,
                         alignItems: "center",
                         paddingTop: 16,
-                       // borderRightWidth: 1,
-                       // borderRightColor: colors.border,
                     }}
                 >
                     <Pressable
@@ -175,7 +174,14 @@ function ThemedTabs() {
                             justifyContent: "center",
                             backgroundColor: state.hovered ? colors.control : colors.surface,
                             borderWidth: 1,
-                            borderColor: colors.border,
+                            // hover: border turns yellow + glow (same 1px border, so nothing moves)
+                            borderColor: state.hovered ? colors.accent : colors.border,
+                            shadowColor: colors.accent,
+                            shadowOpacity: state.hovered ? 0.45 : 0,
+                            shadowRadius: 18,
+                            shadowOffset: {width: 0, height: 0},
+                            transitionProperty: "border-color, box-shadow, background-color",
+                            transitionDuration: "150ms",
                         })}
                     >
                         <Feather name="menu" size={20} color={colors.baseFont}/>
