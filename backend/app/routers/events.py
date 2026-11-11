@@ -122,9 +122,57 @@ def get_events(
         for e in events
     ]
 
-@router.get("/{event_id}", response_model=EventResponse)
-def get_event(event_id: int, session: Session = Depends(get_session)):
+#@router.get("/{event_id}", response_model=EventResponse)
+#def get_event(event_id: int, session: Session = Depends(get_session)):
+  #  event = session.get(Event, event_id)
+  #  if event is None:
+   #     raise HTTPException(status_code=404, detail="Event not found")
+  #  return event
+
+# ----------------------------------------------------------------------------
+# ORIGINAL (kept for reference)
+# Returned the raw Event row: organizer_id, category_id and status went to the
+# app; no category name, spots_left or saved/RSVP flags.
+#
+# @router.get("/{event_id}", response_model=EventResponse)
+# def get_event(event_id: int, session: Session = Depends(get_session)):
+#     event = session.get(Event, event_id)
+#     if event is None:
+#         raise HTTPException(status_code=404, detail="Event not found")
+#     return event
+# ----------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+# NEW: one event, wrapped into EventResponseFront (same shape as the feed).
+#
+#   /api/events/101                -> flags are false
+#   /api/events/101?student_id=1   -> is_saved / is_rsvpd filled in for student 1
+#
+# Cancelled events return 404, so a student can't open an event that's gone.
+# is_recommended is None here (ranking only happens in the feed).
+# ----------------------------------------------------------------------------
+@router.get("/{event_id}", response_model=EventResponseFront)
+def get_event(
+    event_id: int,
+    student_id: Optional[int] = None,
+    session: Session = Depends(get_session),
+):
+    # 1. The row
     event = session.get(Event, event_id)
-    if event is None:
+    if event is None or event.status != "active":
         raise HTTPException(status_code=404, detail="Event not found")
-    return event
+
+    # 2. Lookups the wrapper needs (for just this one event)
+    categories = _category_names(session)
+    rsvp_counts = _active_rsvp_counts(session, [event.event_id])
+
+    if student_id is not None:
+        _require_student(session, student_id)
+        saved = _saved_ids(session, student_id)
+        rsvpd = _rsvp_ids(session, student_id)
+    else:
+        saved, rsvpd = set(), set()
+
+    # 3. Wrap: names in, spots_left calculated, internal fields dropped
+    return _to_feed_event(event, categories, rsvp_counts, saved, rsvpd)
