@@ -232,3 +232,17 @@ def sync_student_feed(
         "sync_token": sync_token,
         "full_sync": full_sync,
     }
+
+
+def wrap_single_event(session: Session, event: Event, student_id: Optional[int] = None) -> dict:
+    """One event → EventResponseFront shape, with this student's flags if given."""
+    categories = _category_names(session)
+    rsvp_counts = _active_rsvp_counts(session, [event.event_id])
+
+    if student_id is not None:
+        saved = _saved_ids(session, student_id)
+        rsvpd = _rsvp_ids(session, student_id)
+    else:
+        saved, rsvpd = set(), set()
+
+    return _to_feed_event(event, categories, rsvp_counts, saved, rsvpd)   # is_recommended = None
