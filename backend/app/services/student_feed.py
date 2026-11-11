@@ -1,8 +1,17 @@
 """
-Student feed: ranked events for one student, with cursor-based sync.
+Student feed: ranked events for one student.
 
-- since=None  -> full feed (first load, reinstall)
-- since=<ts>  -> only events changed after the cursor, plus full ID lists
+CURRENT MODE: full sync on every request.
+  `since` is accepted but ignored; every response has full_sync=True.
+
+CURSOR MODE (disabled, pending team approval):
+  Needs an `updated_at` column + trigger on `events` in Supabase.
+  When enabled:
+    - since=None  -> full feed (first load, reinstall)
+    - since=<ts>  -> only events changed after the cursor, plus full ID lists
+  To enable: uncomment `updated_at` in models.py and the DELTA block below,
+  and set CURSOR_SYNC_ENABLED = True.
+
 Internal fields (organizer_id, category_id, status, scores) never leave this file.
 """
 from collections import defaultdict
@@ -24,7 +33,8 @@ from app.models import (
 )
 
 RECOMMENDED_LIMIT = 5
-SYNC_OVERLAP = timedelta(seconds=5)
+CURSOR_SYNC_ENABLED = False           # flip to True once `updated_at` exists in Supabase
+# SYNC_OVERLAP = timedelta(seconds=5) # used by cursor mode
 
 
 # ---------------------------------------------------------------- checks
@@ -155,7 +165,8 @@ def _to_feed_event(
         "spots_left": spots_left,
         "is_saved": event.event_id in saved and not is_rsvpd,   # RSVP wins
         "is_rsvpd": is_rsvpd,
-        "is_recommended": event.event_id in recommended,
+        # FIX: search passes no `recommended`; `x in None` would crash
+        "is_recommended": None if recommended is None else event.event_id in recommended,
     }
 
 
@@ -168,12 +179,11 @@ def sync_student_feed(
 ) -> dict:
     _require_student(session, student_id)
 
-    # Cursor is taken BEFORE reading, so changes made during this request
-    # are picked up by the next sync.
+    # Taken BEFORE reading. In full-sync mode it's informational only;
+    # in cursor mode it becomes the next `since`.
     sync_token = datetime.now(timezone.utc)
 
-    # All live events. Needed every time to rank and order the full feed,
-    # even when only a few of them are sent back.
+    # All live events, ranked and ordered
     upcoming = session.exec(
         select(Event).where(Event.status == "active", _upcoming_clause(sync_token))
     ).all()
@@ -182,22 +192,26 @@ def sync_student_feed(
     recommended_ids = _recommended_ids(upcoming, scores)
     ordered = _feed_order(upcoming, scores, sync_token)
 
-    if since is None:
-        # Full sync: send every event
-        full_sync = True
-        to_send = ordered
-        removed_ids: list[int] = []
-    else:
-        # Delta: send only what changed after the cursor (minus the overlap)
-        full_sync = False
-        cutoff = since - SYNC_OVERLAP
-        to_send = [e for e in ordered if e.updated_at > cutoff]
-        removed_ids = list(session.exec(
-            select(Event.event_id).where(
-                Event.status != "active",
-                Event.updated_at > cutoff,
-            )
-        ).all())
+    # ------------------------------------------------------------ FULL SYNC (current)
+    # `since` is ignored until `updated_at` exists in Supabase.
+    full_sync = True
+    to_send = ordered
+    removed_ids: list[int] = []
+
+    # ------------------------------------------------------------ DELTA (disabled)
+    # Requires `updated_at` on events (see models.py). Re-enable by setting
+    # CURSOR_SYNC_ENABLED = True and uncommenting below + SYNC_OVERLAP above.
+    #
+    # if CURSOR_SYNC_ENABLED and since is not None:
+    #     full_sync = False
+    #     cutoff = since - SYNC_OVERLAP
+    #     to_send = [e for e in ordered if e.updated_at > cutoff]
+    #     removed_ids = list(session.exec(
+    #         select(Event.event_id).where(
+    #             Event.status != "active",
+    #             Event.updated_at > cutoff,
+    #         )
+    #     ).all())
 
     categories = _category_names(session)
     rsvp_counts = _active_rsvp_counts(session, [e.event_id for e in to_send])
