@@ -1,4 +1,13 @@
-import {ActivityIndicator, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {
+    ActivityIndicator,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import {useState} from "react";
 import {Feather} from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -9,6 +18,10 @@ import {EventCard} from "@/component/EventCard";
 import {TitleCard} from "@/component/TitleCard";
 import {Event, EventStore} from "@/insterface/eventInterface";
 import {useTheme} from "@/hooks/use-theme";
+import {FilterPanel} from "@/component/FilterPanel";
+import {IS_WEB} from "react-native-reanimated/src/common";
+import {InlineFilterBar} from "@/component/InlineFilterBar";
+// import {InlineFilterBar} from "@/component/InlineFilterBar";
 
 
 
@@ -18,6 +31,9 @@ const GRID_GAP = 16;
 interface EventGridProps {
     events: Event[];
     onSelectEvent: (eventId: number) => void;
+}
+interface SearchProps {
+    onOpenFilters: () => void;
 }
 
 const EventGrid = ({events, onSelectEvent}: EventGridProps) => {
@@ -39,17 +55,25 @@ const EventGrid = ({events, onSelectEvent}: EventGridProps) => {
 
     return (
         <View
+            className="pt-4"
             onLayout={e => setWidth(e.nativeEvent.layout.width)}
             style={{flexDirection: "row", flexWrap: "wrap", gap: GRID_GAP}}
         >
             {events.map(event => (
-                <TouchableOpacity
+                <Pressable
                     key={event.eventId}
                     style={{width: cardWidth}}
                     onPress={() => onSelectEvent(event.eventId)}
                 >
-                    <EventCard event={event}/>
-                </TouchableOpacity>
+                    {/* `hovered` exists on web only; on mobile it's always undefined */}
+                    {(state: any) => (
+                        <EventCard
+                            event={event}
+                            highlighted={!!state.hovered}
+                            pressed={state.pressed}
+                        />
+                    )}
+                </Pressable>
             ))}
         </View>
     );
@@ -57,7 +81,7 @@ const EventGrid = ({events, onSelectEvent}: EventGridProps) => {
 
 // ---------------------------------------------------------------- Search bar
 
-const Search = () => {
+const Search = ({onOpenFilters}: SearchProps) => {
     const {colors} = useTheme();
     const {searchEvents, clearSearch, lastSearch} = useEventContext();
 
@@ -117,14 +141,17 @@ const Search = () => {
             )}
 
             {/* RIGHT — filters (category / location / date) come later */}
-            <View
-                className="w-10 h-10 rounded-full items-center justify-center"
-                style={{borderColor: colors.baseGray100}}
-            >
-                <TouchableOpacity onPress={() => { /* TODO: open filter panel */ }}>
-                    <Ionicons name="filter" size={20} color={colors.baseFont}/>
-                </TouchableOpacity>
-            </View>
+            {/* RIGHT — filter sheet button (mobile only; web has the inline bar) */}
+            {!IS_WEB && (
+                <View
+                    className="w-10 h-10 rounded-full items-center justify-center"
+                    style={{borderColor: colors.baseGray100}}
+                >
+                    <TouchableOpacity onPress={onOpenFilters} accessibilityLabel="Open filters">
+                        <Ionicons name="filter" size={20} color={colors.baseFont}/>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 };
@@ -177,23 +204,16 @@ const UserFeed = ({recommendedEvents, upcomingEvents, onSelectEvent}: UserFeedPr
                 //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 // }
             >
+                {IS_WEB && <InlineFilterBar/>}
                 <TitleCard/>
+
 
                 <DiscoverSectionHeader text="Recommended for you" textSize="xxl"/>
                 <EventGrid events={recommendedEvents} onSelectEvent={onSelectEvent}/>
-                {/*{recommendedEvents.map(event => (*/}
-                {/*    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>*/}
-                {/*        <EventCard event={event}/>*/}
-                {/*    </TouchableOpacity>*/}
-                {/*))}*/}
 
                 <DiscoverSectionHeader text="Upcoming events" textSize="xxl"/>
                 <EventGrid events={upcomingEvents} onSelectEvent={onSelectEvent}/>
-                {/*{upcomingEvents.map(event => (*/}
-                {/*    <TouchableOpacity key={event.eventId} onPress={() => onSelectEvent(event.eventId)}>*/}
-                {/*        <EventCard event={event}/>*/}
-                {/*    </TouchableOpacity>*/}
-                {/*))}*/}
+
             </ScrollView>
         </View>
     );
@@ -274,6 +294,7 @@ interface EventListViewProps {
 export const EventListView = ({eventState, isLoadDetailScreen}: EventListViewProps) => {
     // TODO: MOVE TO A BROADER CONTEXT FOR DEVICE AND DEVICE INFORMATION
     const [device, setDevice] = useState<string | null>(null);
+    const [filtersOpen, setFiltersOpen] = useState(false);
 
     const {searchResults, isSearching, searchError, lastSearch} = useEventContext();
     const state = eventState;
@@ -293,7 +314,12 @@ export const EventListView = ({eventState, isLoadDetailScreen}: EventListViewPro
 
     return (
         <View className="flex-1">
-            <TopContainer childrenOne={<Search/>}/>
+            <TopContainer childrenOne={<Search onOpenFilters={() =>
+            {
+                console.log("clicking ")
+                setFiltersOpen(true)}
+            }
+            />}/>
 
             {showSearch ? (
                 <SearchResults
@@ -310,6 +336,10 @@ export const EventListView = ({eventState, isLoadDetailScreen}: EventListViewPro
                     onSelectEvent={openDetails}
                 />
             )}
+            <FilterPanel visible={filtersOpen} onClose={() => {
+                console.log("clicking ")
+                setFiltersOpen(false)}
+            }/>
         </View>
     );
 };
