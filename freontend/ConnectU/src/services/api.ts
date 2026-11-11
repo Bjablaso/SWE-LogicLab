@@ -105,6 +105,18 @@ export async function getEvents(
     const query = params.toString();
     return request<EventResponseFront[]>(`/api/events${query ? `?${query}` : ""}`);
 }
+
+// GET /api/events/{event_id}?student_id=...
+// One event, wrapped (same shape as feed and search), with this student's saved/RSVP flags
+export async function getEvent(
+    studentId: number,
+    eventId: number,
+): Promise<EventResponseFront> {
+    const params = new URLSearchParams();
+    params.append("student_id", studentId.toString());   // fills is_saved / is_rsvpd
+
+    return request<EventResponseFront>(`/api/events/${eventId}?${params.toString()}`);
+}
 // get student feed
 export async function getStudentFeed(
     studentId: number,
@@ -115,6 +127,41 @@ export async function getStudentFeed(
     return request<StudentFeedSyncResponse>(`/api/students/${studentId}/feed${query}`);
 }
 
+// POST /api/students/{student_id}/events/{event_id}/view
+// Records that the student opened this event and returns the latest version of it
+export async function recordEventView(
+    studentId: number,
+    eventId: number,
+): Promise<EventResponseFront> {
+    return request<EventResponseFront>(
+        `/api/students/${studentId}/events/${eventId}/view`,
+        {method: "POST"},
+    );
+}
+
+export async function saveEvent(studentId: number, eventId: number): Promise<EventResponseFront> {
+    return request<EventResponseFront>(`/api/students/${studentId}/saved-events/${eventId}`, {method: "POST"});
+}
+
+export async function unsaveEvent(studentId: number, eventId: number): Promise<EventResponseFront> {
+    return request<EventResponseFront>(`/api/students/${studentId}/saved-events/${eventId}`, {method: "DELETE"});
+}
+
+export async function getSavedEvents(studentId: number): Promise<EventResponseFront[]> {
+    return request<EventResponseFront[]>(`/api/students/${studentId}/saved-events`);
+}
+
+export async function createRSVP(studentId: number, eventId: number): Promise<EventResponseFront> {
+    return request<EventResponseFront>(`/api/students/${studentId}/rsvps/${eventId}`, {method: "POST"});
+}
+
+export async function cancelRSVP(studentId: number, eventId: number): Promise<EventResponseFront> {
+    return request<EventResponseFront>(`/api/students/${studentId}/rsvps/${eventId}`, {method: "DELETE"});
+}
+
+export async function getRSVPs(studentId: number): Promise<EventResponseFront[]> {
+    return request<EventResponseFront[]>(`/api/students/${studentId}/rsvps`);
+}
 // export async function searchStudentEvents(
 //     studentId: number,
 //     filters: EventSearchFilters,
