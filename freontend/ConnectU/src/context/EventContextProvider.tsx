@@ -2,8 +2,18 @@ import {EventContext} from "@/context/EventContext";
 import {useCallback, useEffect, useReducer, useRef, useState} from "react";
 import {AppState} from "react-native";
 import {userEvent, userEventReducer} from "@/reducers/UserEventReducer";
-import {filterBy, Event, EventSearchFilters} from "@/insterface/eventInterface";
-import {getStudentFeed, searchStudentEvents} from "@/services/api";
+import {filterBy, Event, EventAction, EventSearchFilters} from "@/insterface/eventInterface";
+import {
+    getStudentFeed,
+    searchStudentEvents,
+    saveEvent as apiSaveEvent,
+    unsaveEvent as apiUnsaveEvent,
+    createRSVP as apiCreateRSVP,
+    cancelRSVP as apiCancelRSVP,
+    getSavedEvents as apiGetSavedEvents,
+    getRSVPs as apiGetRSVPs,
+    type EventResponseFront,
+} from "@/services/api";
 import {toEvent, toFeedPayload} from "@/services/feedAdapter";
 
 // ---------------------------------------------------------------- sync rules
@@ -31,9 +41,6 @@ export const EventContextProvider = ({children}: EventContextProps) => {
         inFlightRef.current = true;
         try {
             const feed = await getStudentFeed(STUDENT_ID, syncTokenRef.current);
-
-            console.log(feed);
-
             dispatch({type: "SYNC_FEED", payload: toFeedPayload(feed)});
             syncTokenRef.current = feed.sync_token;     // only after a successful merge
             lastSyncRef.current = Date.now();
@@ -68,12 +75,12 @@ export const EventContextProvider = ({children}: EventContextProps) => {
     // ------------------------------------------------------------ search
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
-    const [lastSearch, setLastSearch] = useState<EventSearchFilters | null>(null);   // NEW
+    const [lastSearch, setLastSearch] = useState<EventSearchFilters | null>(null);
     const searchRequestRef = useRef(0);       // ignore responses from older searches
 
     async function searchEvents(filters: EventSearchFilters) {
         const requestId = ++searchRequestRef.current;
-        setLastSearch(filters);                                                      // NEW
+        setLastSearch(filters);
         setIsSearching(true);
         setSearchError(null);
 
@@ -91,7 +98,7 @@ export const EventContextProvider = ({children}: EventContextProps) => {
 
     function clearSearch() {
         searchRequestRef.current++;           // cancels any search still in flight
-        setLastSearch(null);                                                         // NEW
+        setLastSearch(null);
         setIsSearching(false);
         setSearchError(null);
         dispatch({type: "CLEAR_SEARCH"});
@@ -138,21 +145,92 @@ export const EventContextProvider = ({children}: EventContextProps) => {
         return sortByDate(rsvpEventList, filt);
     }
 
-    // ------------------------------------------------------------ actions (local only for now)
-    function saveEvent(currentEventID: number) {
-        dispatch({type: "SAVED", payload: {eventId: currentEventID}});
+    // ------------------------------------------------------------ actions (screen first, then backend)
+    const [actionError, setActionError] = useState<string | null>(null);
+
+    /**
+     * 1. Remember the event as it is now (for undo)
+     * 2. Update the screen right away (optimistic)
+     * 3. Call the backend; its reply replaces the local copy (it's the truth:
+     *    spots_left, saved/RSVP flags after "RSVP wins", etc.)
+     * 4. If the call fails, put the event back and show an error
+     */
+    async function runAction(
+        eventId: number,
+        optimistic: EventAction,
+        call: () => Promise<EventResponseFront>,
+        failMessage: string,
+    ) {
+        const previous = eventState.events.find(e => e.eventId === eventId);
+        setActionError(null);
+        dispatch(optimistic);
+
+        try {
+            const updated = await call();
+            dispatch({type: "UPSERT_EVENT", payload: {event: toEvent(updated)}});
+        } catch (err) {
+            if (previous) dispatch({type: "UPSERT_EVENT", payload: {event: previous}});   // undo
+            setActionError(err instanceof Error ? err.message : failMessage);
+        }
     }
 
-    function unsaveEvent(currentEventID: number) {
-        dispatch({type: "UNSAVED", payload: {eventId: currentEventID}});
+    function saveEvent(eventId: number) {
+        return runAction(
+            eventId,
+            {type: "SAVED", payload: {eventId}},
+            () => apiSaveEvent(STUDENT_ID, eventId),
+            "Couldn't save this event.",
+        );
     }
 
-    function attendEvent(currentEventID: number) {
-        dispatch({type: "ATTEND", payload: {eventId: currentEventID}});
+    function unsaveEvent(eventId: number) {
+        return runAction(
+            eventId,
+            {type: "UNSAVED", payload: {eventId}},
+            () => apiUnsaveEvent(STUDENT_ID, eventId),
+            "Couldn't remove this event.",
+        );
     }
 
-    function unattendEvent(currentEventID: number) {
-        dispatch({type: "UNATTEND", payload: {eventId: currentEventID}});
+    function attendEvent(eventId: number) {
+        return runAction(
+            eventId,
+            {type: "ATTEND", payload: {eventId}},          // also clears the save locally
+            () => apiCreateRSVP(STUDENT_ID, eventId),      // backend also removes the save
+            "Couldn't RSVP to this event.",
+        );
+    }
+
+    function unattendEvent(eventId: number) {
+        return runAction(
+            eventId,
+            {type: "UNATTEND", payload: {eventId}},
+            () => apiCancelRSVP(STUDENT_ID, eventId),
+            "Couldn't cancel your RSVP.",
+        );
+    }
+
+    function clearActionError() {
+        setActionError(null);
+    }
+
+    /**
+     * Pull the student's saved + RSVP'd events straight from the backend and
+     * write them into the cache. Use when opening Saved or Attending so they
+     * reflect changes made on another device without waiting for a feed sync.
+     */
+    async function refreshMyEvents() {
+        try {
+            const [saved, rsvps] = await Promise.all([
+                apiGetSavedEvents(STUDENT_ID),
+                apiGetRSVPs(STUDENT_ID),
+            ]);
+            [...saved, ...rsvps].forEach(raw =>
+                dispatch({type: "UPSERT_EVENT", payload: {event: toEvent(raw)}}),
+            );
+        } catch (err) {
+            console.log("Refreshing saved/RSVP lists failed:", err);
+        }
     }
 
     return (
@@ -164,6 +242,9 @@ export const EventContextProvider = ({children}: EventContextProps) => {
                 unsaveEvent,
                 attendEvent,
                 unattendEvent,
+                actionError,
+                clearActionError,
+                refreshMyEvents,
                 filterRSVPEventList,
                 filterSavedEventList,
                 sevedEventList,
@@ -172,7 +253,7 @@ export const EventContextProvider = ({children}: EventContextProps) => {
                 searchResults,
                 isSearching,
                 searchError,
-                lastSearch,                                                          // NEW
+                lastSearch,
                 searchEvents,
                 clearSearch,
             }}
