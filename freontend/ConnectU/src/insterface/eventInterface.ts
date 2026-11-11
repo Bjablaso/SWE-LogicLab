@@ -72,6 +72,10 @@ export interface EventContextType {
 
     searchEvents: (filters: EventSearchFilters) => Promise<void>;
     clearSearch: () => void;
+
+    actionError: string | null;
+    clearActionError: () => void;
+    refreshMyEvents: () => Promise<void>;
 }
 
 export function nextDirection(current: filterBy): filterBy {
@@ -110,4 +114,5 @@ export type EventAction =
     | { type: "UNATTEND"; payload: { eventId: number } }
     | { type: "SYNC_FEED"; payload: FeedSyncPayload }
     | { type: "SEARCH_RESULTS"; payload: { events: Event[] } }
-    | { type: "CLEAR_SEARCH" };
+    | { type: "CLEAR_SEARCH" }
+    | { type: "UPSERT_EVENT"; payload: { event: Event } };
