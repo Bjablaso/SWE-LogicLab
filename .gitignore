@@ -47,3 +47,4 @@ example
 
 # VS Code
 .vscode/
+__pycache__/
