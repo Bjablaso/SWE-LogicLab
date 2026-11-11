@@ -7,6 +7,9 @@ from app.database import get_session
 from app.models import Event, EventView, Student
 from app.schemas import EventViewResponse, RecommendationResponse
 from app.services.recommendations import get_recommendations as calculate_recommendations
+from app.schemas import StudentFeedSyncResponse
+from typing import Optional
+from app.services.student_feed import sync_student_feed
 
 router = APIRouter(prefix="/api/students", tags=["Students"])
 
@@ -50,3 +53,14 @@ def get_recommendations(
         raise HTTPException(status_code=404, detail="Student not found")
 
     return calculate_recommendations(student_id, session)
+
+@router.get("/{student_id}/feed", response_model=StudentFeedSyncResponse)
+def student_feed(
+    student_id: int,
+    since: Optional[datetime] = None,          # ?since=2026-11-10T20:14:00Z
+    session: Session = Depends(get_session),
+):
+    if session.get(Student, student_id) is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return sync_student_feed(session, student_id, since)
