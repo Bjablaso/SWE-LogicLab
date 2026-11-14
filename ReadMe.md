@@ -26,3 +26,152 @@ The initial version will be developed as a web application using a database for 
 - Ankith Rajashekar (https://github.com/ankith860)
 - Natalie Piltoyan (https://github.com/natpil)
 - Nyeswaty Socree (https://github.com/nsocree)
+
+## Backend Database Setup
+
+The PostgreSQL schema for the UC-3 and UC-4 backend tables is in `backend/schema.sql`.
+To create the tables in a fresh database and load the sample data, run:
+
+```bash
+psql "<PostgreSQL connection string>" -f backend/schema.sql
+psql "<PostgreSQL connection string>" -f backend/seed.sql
+```
+
+The seed script creates sample student `1`, categories, interests, and events. It
+skips existing categories, interests, events, and relationship rows so it can be
+run again without duplicating those samples. Keep connection strings and passwords
+out of source control.
+
+## Deploying the Backend to Render
+
+The root `render.yaml` configures a Python web service using `backend` as its root,
+installs `backend/requirements.txt`, starts the FastAPI app with Uvicorn, and uses
+`/health` for its health check. When creating the Render Blueprint, set the
+`DATABASE_URL` environment variable in Render to the PostgreSQL connection string;
+do not commit it to this repository.
+
+After deployment, set `CORS_ORIGINS` in the Render service environment to the
+frontend's origin (for example, `https://your-frontend.example.com`). Multiple
+origins can be separated by commas. The backend defaults to the local development
+origins `http://localhost:5173` and `http://localhost:8081`.
+
+The deployed API base URL can then be used by the frontend instead of
+`http://127.0.0.1:8000`. Check `/health` and `/docs` on the deployed service after
+the first deploy.
+
+## Campus Connect - Run Instructions
+
+### Requirements
+
+- Windows, macOS, or Linux
+- Node.js LTS and npm
+- Internet connection
+
+### Start the web application
+
+1. Install Node.js LTS, which includes npm:
+
+   **Windows PowerShell:**
+
+   ```powershell
+   winget install OpenJS.NodeJS.LTS
+   ```
+
+   **Bash/Zsh (macOS with Homebrew):**
+
+   ```bash
+   brew install node
+   ```
+
+   **Bash/Zsh (using nvm):**
+
+   Install [nvm](https://github.com/nvm-sh/nvm) for your shell, then run:
+
+   ```bash
+   nvm install --lts
+   ```
+
+   Close and reopen your terminal after installing Node.js, then verify the
+   commands are available:
+
+   ```bash
+   node --version
+   npm --version
+   ```
+
+2. Clone the repository:
+
+   **PowerShell:**
+
+   ```powershell
+   git clone https://github.com/Bjablaso/SWE-LogicLab.git
+   ```
+
+   **Bash/Zsh:**
+
+   ```bash
+   git clone https://github.com/Bjablaso/SWE-LogicLab.git
+   ```
+
+3. Go to the frontend project folder:
+
+   ```powershell
+   cd .\SWE-LogicLab\freontend\ConnectU
+   ```
+
+   ```bash
+   cd ./SWE-LogicLab/freontend/ConnectU
+   ```
+
+   If your terminal is already in the repository folder, use `cd .\freontend\ConnectU`
+   in PowerShell or `cd ./freontend/ConnectU` in Bash/Zsh.
+
+4. Install frontend dependencies:
+
+   ```powershell
+   npm install
+   ```
+
+   ```bash
+   npm install
+   ```
+
+5. Make sure a `.env` file exists in `freontend\ConnectU` (PowerShell) or
+   `freontend/ConnectU` (Bash/Zsh) with this setting:
+
+   ```env
+   EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com
+   ```
+
+   If the file does not exist, create it from the frontend folder:
+
+   ```powershell
+   Set-Content .env "EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com"
+   ```
+
+   ```bash
+   printf '%s\n' 'EXPO_PUBLIC_API_URL=https://campus-connect-api-rbtm.onrender.com' > .env
+   ```
+
+6. Start the web application:
+
+   ```powershell
+   npm run web
+   ```
+
+   ```bash
+   npm run web
+   ```
+
+7. Open the URL printed by Expo. It is typically:
+
+   ```text
+   http://localhost:8081
+   ```
+
+   Expo may instead show `http://127.0.0.1:8081`; either address opens the local
+   application. The frontend connects to the deployed backend and requires an
+   internet connection.
+
+> **Note:** The backend is hosted on Render's free tier. The first request may
+> take several seconds if the service has been inactive.
