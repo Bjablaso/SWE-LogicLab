@@ -2,7 +2,11 @@ import "../global.css"   // ← NativeWind/Tailwind: must be imported once at th
 
 import {useEffect, useRef, useState} from "react";
 import {Animated, Platform, Pressable, View} from "react-native";
-import {Tabs} from "expo-router";
+import {
+    Tabs,
+    usePathname,
+    useRouter,
+} from "expo-router";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import {Feather} from "@expo/vector-icons";
 
@@ -13,7 +17,10 @@ import {EventContextProvider} from "@/context/EventContextProvider";
 import {useTheme} from "@/hooks/use-theme";
 import {Easing} from "react-native-reanimated";
 import {Glow} from "@/component/Glow";
-
+import {
+    clearSession,
+    logoutAccount,
+} from "@/services/auth";
 
 function WebDrawerOverlay({
                               open,
@@ -106,29 +113,47 @@ function WebDrawerOverlay({
 function ThemedTabs() {
     const {colors, isDark, setScheme} = useTheme();
     const isWeb = Platform.OS === "web";
+    const pathname = usePathname();
+    const router = useRouter();
+    const isAuthRoute =
+        pathname === "/Login" ||
+        pathname === "/Register";
 
     const [navOpen, setNavOpen] = useState(false);       // web: drawer over the content
     const [navPinned, setNavPinned] = useState(false);   // web: drawer docked beside the content
 
     const tabs = (
         <Tabs
+            backBehavior="initialRoute"
             screenOptions={{
                 headerShown: false,
                 sceneStyle: {backgroundColor: colors.background},
             }}
             // Web: no bottom bar (the side nav replaces it). Mobile: unchanged.
-            tabBar={isWeb ? () => null : (props) => <Navbar {...props}/>}
+            tabBar={
+                isWeb || isAuthRoute
+                    ? () => null
+                    : (props) => <Navbar {...props}/>
+            }
         >
+            <Tabs.Screen name="index" options={{href: "/"}}/>
             <Tabs.Screen name="Discover"/>
             <Tabs.Screen name="Saved"/>
             <Tabs.Screen name="Attending"/>
             <Tabs.Screen name="Account"/>
-            <Tabs.Screen name="index" options={{href: null}}/>
+            <Tabs.Screen name="Login" options={{href: "/Login"}}/>
+            <Tabs.Screen name="Register" options={{href: "/Register"}}/>
         </Tabs>
     );
 
+    if (isAuthRoute) {
+        return tabs;
+    }
+
     // Mobile: exactly as before
-    if (!isWeb) return tabs;
+    if (!isWeb) {
+        return tabs;
+    }
 
     function togglePin() {
         setNavPinned(p => !p);
@@ -140,12 +165,30 @@ function ThemedTabs() {
         setNavPinned(false);
     }
 
+    async function handleLogout() {
+        try {
+            await logoutAccount();
+        } catch (error) {
+            console.warn("Backend logout failed:", error);
+        } finally {
+            try {
+                await clearSession();
+            } catch (error) {
+                console.warn("Could not clear the local session:", error);
+            } finally {
+                setNavOpen(false);
+                setNavPinned(false);
+                router.replace("/Login");
+            }
+        }
+    }
+
     const navProps = {
         onClose: closeNav,
         onTogglePin: togglePin,
         isDark,
         onToggleTheme: () => setScheme(isDark ? "light" : "dark"),   // pass the opposite mode
-        onLogout: () => { /* TODO: auth */ },
+        onLogout: handleLogout,
     };
 
     const RAIL_WIDTH = 76;

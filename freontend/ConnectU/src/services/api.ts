@@ -51,6 +51,20 @@ export interface EventSearchResponse {
     searched_at: string;          // freshness only, NOT a sync cursor
 }
 
+export interface InterestResponse {
+    interest_id: number;
+    name: string;
+}
+
+export interface StudentProfile {
+    student_id: number;
+    user_id: number;
+    email: string;
+    display_name: string;
+    university: string;
+    interests: InterestResponse[];
+}
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "");
 
 if (!API_URL) {
@@ -81,6 +95,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
 
     return (await response.json()) as T;
+}
+
+export async function getStudentProfile(studentId: number): Promise<StudentProfile> {
+    return request<StudentProfile>(`/api/students/${studentId}/profile`);
+}
+
+export async function getAvailableInterests(): Promise<InterestResponse[]> {
+    return request<InterestResponse[]>("/api/students/interests/all");
+}
+
+export async function updateStudentProfile(
+    studentId: number,
+    data: { display_name: string; interest_ids: number[] },
+): Promise<StudentProfile> {
+    return request<StudentProfile>(`/api/students/${studentId}/profile`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+    });
 }
 
 export async function getEvents(

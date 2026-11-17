@@ -52,8 +52,11 @@ do not commit it to this repository.
 
 After deployment, set `CORS_ORIGINS` in the Render service environment to the
 frontend's origin (for example, `https://your-frontend.example.com`). Multiple
-origins can be separated by commas. The backend defaults to the local development
-origins `http://localhost:5173` and `http://localhost:8081`.
+origins can be separated by commas. For local Expo web development on port 8082,
+include `http://localhost:8082` alongside the deployed frontend origin when you
+need the local app to call the deployed API. The backend defaults to the local
+development origins `http://localhost:5173`, `http://localhost:8081`, and
+`http://localhost:8082`.
 
 The deployed API base URL can then be used by the frontend instead of
 `http://127.0.0.1:8000`. Check `/health` and `/docs` on the deployed service after
