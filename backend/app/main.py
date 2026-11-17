@@ -7,8 +7,10 @@ from sqlmodel import SQLModel
 
 from app import models
 from app.database import engine
+from app.routers.auth import router as auth_router
 from app.routers.engagement import router as engagement_router
 from app.routers.events import router as events_router
+from app.routers.profiles import router as profiles_router
 from app.routers.students import router as students_router
 
 cors_origins = [
@@ -44,6 +46,8 @@ app.add_middleware(
 app.include_router(events_router)
 app.include_router(engagement_router)
 app.include_router(students_router)
+app.include_router(auth_router)
+app.include_router(profiles_router)
 
 
 @app.get("/")

@@ -8,6 +8,18 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     user_id: Optional[int] = Field(default=None, primary_key=True)
+    email: Optional[str] = Field(
+        default=None,
+        max_length=255,
+        unique=True,
+        index=True,
+    )
+    display_name: Optional[str] = Field(default=None, max_length=100)
+    password_hash: Optional[str] = None
+    role: str = Field(default="student", max_length=30)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+    )
 
 
 class Student(SQLModel, table=True):
